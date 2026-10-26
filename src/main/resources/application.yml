@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: qlns-nhom14
+  profiles:
+    default: sqlite
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+
+# Ảnh tải lên được kiểm tra và chuyển thành PNG ở backend.
