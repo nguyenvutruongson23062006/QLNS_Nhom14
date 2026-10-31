@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS schema_migration (
     applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 INSERT INTO schema_migration(version, description) VALUES (2, 'rental-system');
+INSERT INTO schema_migration(version, description) VALUES (3, 'payment-reference-unique');
 
 CREATE TABLE IF NOT EXISTS hoi_vien (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -206,6 +207,7 @@ CREATE TABLE IF NOT EXISTS chi_tiet_don_hang_sach_cu (
 CREATE INDEX IF NOT EXISTS idx_hoi_vien_trang_thai ON hoi_vien(trang_thai);
 CREATE INDEX IF NOT EXISTS idx_thanh_toan_tham_chieu ON thanh_toan(tham_chieu_loai, tham_chieu_id);
 CREATE INDEX IF NOT EXISTS idx_thanh_toan_trang_thai ON thanh_toan(trang_thai);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_thanh_toan_ma_giao_dich ON thanh_toan(ma_giao_dich_nha_cung_cap);
 CREATE INDEX IF NOT EXISTS idx_ban_sao_sach_trang_thai ON ban_sao_sach(sach_id, trang_thai);
 CREATE INDEX IF NOT EXISTS idx_phieu_thue_khach ON phieu_thue(khach_hang_id, ngay_tao);
 CREATE INDEX IF NOT EXISTS idx_phieu_thue_trang_thai ON phieu_thue(trang_thai);

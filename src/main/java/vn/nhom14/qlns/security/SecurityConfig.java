@@ -46,6 +46,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/system/status", "/api/auth/csrf", "/api/auth/me").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
                 .requestMatchers("/api/accounts/**").hasRole("ADMIN")
+                .requestMatchers("/api/payments/**").hasAnyRole("ADMIN", "NHAN_VIEN")
+                .requestMatchers("/api/memberships/**").authenticated()
                 .requestMatchers("/api/ho-so/**", "/api/yeu-thich/**", "/api/anh/dai-dien").hasRole("KHACH_HANG")
                 .requestMatchers("/api/anh/sach").hasAnyRole("ADMIN", "NHAN_VIEN")
                 .requestMatchers("/api/orders/**").authenticated()
