@@ -1,5 +1,9 @@
 # Bàn giao tuần 3 cho cả 3 thành viên
 
+> Tài liệu lưu vết của bản tuần 3, không phải trạng thái hiện tại. Bản dùng để báo cáo và nghiệm
+> thu hiện nay đã có xác thực thật, phân quyền, nhân viên, giỏ hàng và đơn hàng; xem README và
+> `docs/11-don-hang-nhan-vien-va-bao-mat.md`. Các số liệu kiểm thử bên dưới chỉ thuộc lần bàn giao cũ.
+
 Phạm vi theo kế hoạch 5 tuần: giao diện website và kết nối API. Mã nguồn được bổ sung trực tiếp vào dự án hiện có; tiếp tục sử dụng các API tuần 2.
 
 | Thành viên | Phần việc | File chính |

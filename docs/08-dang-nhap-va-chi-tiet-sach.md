@@ -18,7 +18,9 @@ Demo tự tạo hai tài khoản nếu chưa tồn tại:
 | Admin | admin | Admin@123456 |
 | Bạn đọc | bandoc | BanDoc@123456 |
 
-Tài khoản mẫu chỉ khởi tạo ở profile demo. MySQL sử dụng dữ liệu tài khoản trong bảng tai_khoan với mật khẩu BCrypt; không tự tạo admin mẫu trong MySQL. Đăng ký bạn đọc dùng /dang-ky.html.
+Tài khoản mẫu chỉ khởi tạo ở profile `demo` và môi trường `test`. SQLite/MySQL thật không
+chứa mật khẩu cố định; admin đầu tiên chỉ được tạo khi người vận hành truyền
+`QLNS_INITIAL_ADMIN_PASSWORD`. Đăng ký bạn đọc dùng `/dang-ky.html` và luôn nhận vai trò `KHACH_HANG`.
 
 - /dang-nhap.html: bạn đọc đăng nhập rồi chuyển tới tủ sách.
 - /admin-login.html: đăng nhập admin, tài khoản bạn đọc không thể dùng luồng này để vào quản trị.
@@ -26,8 +28,17 @@ Tài khoản mẫu chỉ khởi tạo ở profile demo. MySQL sử dụng dữ l
 - / và /sach.html: danh sách xem công khai, không có nút CRUD. Đọc chi tiết yêu cầu đăng nhập.
 - /chi-tiet.html?id=1: bìa, tên, tác giả, thể loại, NXB, giá, tồn kho, giới thiệu và đọc thử. Sách chưa có URL ảnh dùng bìa SVG mặc định. Nội dung đọc thử hiện là đoạn minh họa biên soạn cho bài tập, chưa phải trích đoạn riêng từ sách thực tế.
 
-Backend chặn API ghi sách/danh mục/NXB và toàn bộ API khách hàng nếu không có quyền ADMIN. Ghi dữ liệu và đăng xuất cần CSRF token; /api/auth/csrf cấp token cho client. /api/auth/me trả người dùng hiện tại, /api/auth/login nhận form, /api/auth/register nhận JSON.
+Backend cho `ADMIN` quản lý toàn bộ; `NHAN_VIEN` được quản lý sách, khách hàng và đơn hàng
+nhưng không được sửa danh mục, nhà xuất bản hay tài khoản nhân viên. `KHACH_HANG` chỉ truy cập
+hồ sơ, yêu thích, giỏ/đơn của chính mình. Ghi dữ liệu và đăng xuất cần CSRF token;
+`/api/auth/csrf` cấp token cho client, `/api/auth/me` trả người dùng hiện tại,
+`/api/auth/login` nhận form và `/api/auth/register` nhận JSON.
 
-Kiểm chứng: mvnw.cmd test đạt 18 test hiện có sau khi cập nhật test CRUD đăng nhập admin. scripts/security-smoke.ps1 kiểm tra HTTP thực tế tại 8094: sai mật khẩu, phiên bạn đọc, quyền admin, chặn khách hàng và ghi sách trái phép, đăng xuất và CSRF. Mã JavaScript đã kiểm tra cú pháp bằng node --check. Đã kiểm tra trên trình duyệt luồng bạn đọc đăng nhập và xem chi tiết sách. MySQL chưa được kiểm chứng trực tiếp.
+Kiểm chứng hiện tại dùng toàn bộ Maven integration test cho H2 và SQLite, gồm CRUD, đăng nhập,
+CSRF, hồ sơ, yêu thích, vai trò nhân viên, đơn hàng, idempotency, chống oversell và hoàn tồn.
+Mã JavaScript được kiểm tra cú pháp bằng `node --check`. MySQL vẫn cần được kiểm chứng trên
+máy có dịch vụ MySQL thật trước khi ghi nhận nghiệm thu môi trường MySQL.
 
-Các tài liệu và báo cáo tuần 3 trước ngày cập nhật ghi đăng nhập minh họa là trạng thái lịch sử, không còn phản ánh bản mở rộng này. Đơn hàng và thanh toán chưa triển khai.
+Các tài liệu và báo cáo tuần 3 trước ngày cập nhật ghi đăng nhập minh họa là trạng thái lịch sử,
+không còn phản ánh bản mở rộng này. Đơn hàng COD, quản lý trạng thái và hoàn tồn đã triển khai;
+thanh toán trực tuyến chưa nằm trong phạm vi bản này.

@@ -7,6 +7,9 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: none
+  jdbc:
+    template:
+      query-timeout: 10s
 server:
   port: ${PORT:8080}
   error:

@@ -88,10 +88,12 @@ class WeekTwoIntegrationTests {
     }
 
     @Test void duplicateNamesCodesAndIsbnReturnConflict() throws Exception {
+        String existingPublisher = jdbc.queryForObject(
+                "SELECT ten_nha_xuat_ban FROM nha_xuat_ban ORDER BY id LIMIT 1", String.class);
         assertEquals(409, send("POST", "/api/danh-muc",
                 "{\"tenDanhMuc\":\"Văn học\",\"trangThai\":true}").statusCode());
         assertEquals(409, send("POST", "/api/nha-xuat-ban",
-                "{\"tenNhaXuatBan\":\"Nhà xuất bản Trẻ\",\"trangThai\":true}").statusCode());
+                "{\"tenNhaXuatBan\":\"" + existingPublisher + "\",\"trangThai\":true}").statusCode());
         assertEquals(409, send("POST", "/api/sach",
                 book("S001", "Trùng mã", 1, "0", "0", "null")).statusCode());
         String first = send("POST", "/api/sach",

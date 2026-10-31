@@ -19,7 +19,7 @@ class WeekOneIntegrationTests {
     @Value("${local.server.port}") int port;
     @Autowired JdbcTemplate jdbc;
 
-    @Test void schemaHasEightTablesAndSeedData() {
+    @Test void schemaHasEightTablesAndRealCatalogData() {
         for (String table : new String[] {"vai_tro", "tai_khoan", "khach_hang", "danh_muc",
                 "nha_xuat_ban", "sach", "don_hang", "chi_tiet_don_hang"}) {
             assertNotNull(jdbc.queryForObject("SELECT COUNT(*) FROM " + table, Integer.class));
@@ -27,7 +27,16 @@ class WeekOneIntegrationTests {
         assertEquals(3, jdbc.queryForObject("SELECT COUNT(*) FROM vai_tro", Integer.class));
         assertEquals(40, jdbc.queryForObject("SELECT COUNT(*) FROM sach", Integer.class));
         assertEquals(10, jdbc.queryForObject("SELECT COUNT(*) FROM danh_muc", Integer.class));
-        assertEquals(8, jdbc.queryForObject("SELECT COUNT(*) FROM nha_xuat_ban", Integer.class));
+        assertEquals(33, jdbc.queryForObject("SELECT COUNT(*) FROM nha_xuat_ban", Integer.class));
+        assertEquals(40, jdbc.queryForObject(
+                "SELECT COUNT(DISTINCT isbn) FROM sach WHERE isbn IS NOT NULL AND TRIM(isbn) <> ''",
+                Integer.class));
+        assertEquals(40, jdbc.queryForObject(
+                "SELECT COUNT(*) FROM sach WHERE hinh_anh LIKE '/images/books/s%.jpg'",
+                Integer.class));
+        assertEquals(0, jdbc.queryForObject(
+                "SELECT COUNT(*) FROM sach WHERE tac_gia LIKE '%minh họa%' OR mo_ta LIKE '%Dữ liệu học tập%'",
+                Integer.class));
     }
 
     @Test void databaseRejectsNegativeStockAndInvalidForeignKey() {
@@ -41,7 +50,7 @@ class WeekOneIntegrationTests {
         var response = get("/api/system/status");
         assertEquals(200, response.statusCode());
         assertTrue(response.body().contains("\"database\":\"CONNECTED\""));
-        assertTrue(response.body().contains("\"week\":2"));
+        assertTrue(response.body().contains("\"week\":4"));
     }
 
     @Test void homepageIsServed() throws Exception {

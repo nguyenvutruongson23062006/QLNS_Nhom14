@@ -1,10 +1,10 @@
-# Cập nhật đăng nhập và chi tiết sách
+# Quản lý nhà sách Nhóm 14 — bản tích hợp dùng cho báo cáo
 
-Đã bổ sung đăng nhập thật, phân quyền admin, đăng ký bạn đọc và chi tiết sách. Xem [Hướng dẫn bản mới](docs/08-dang-nhap-va-chi-tiet-sach.md) để lấy tài khoản và chạy bản cập nhật. Các ghi chú đăng nhập minh họa bên dưới là tài liệu của phiên bản cũ.
+Ứng dụng có storefront, đăng nhập phiên máy chủ, phân quyền ADMIN/NHAN_VIEN/KHACH_HANG,
+quản lý nhân viên, hồ sơ, yêu thích, giỏ hàng và đơn COD. Checkout lấy giá từ cơ sở dữ liệu,
+khóa/kiểm tra tồn kho, chống gửi trùng và hoàn tồn đúng một lần khi hủy.
 
-# Quản lý nhà sách Nhóm 14
-
-Đã triển khai tuần 1, tuần 2 và giao diện tuần 3 cho cả 3 thành viên theo kế hoạch 5 tuần.
+Đã tích hợp nội dung tuần 1 đến tuần 4 cho cả 3 thành viên theo kế hoạch 5 tuần.
 Tuần 2: thành viên 1 làm API sách; thành viên 2 làm API danh mục và nhà xuất bản;
 thành viên 3 làm API khách hàng. Tài liệu bàn giao: `docs/05-ban-giao-tuan-2.md`;
 JSON và hướng dẫn thử: `docs/06-huong-dan-api-tuan-2.md`.
@@ -19,12 +19,18 @@ Mở PowerShell:
 ```powershell
 cd D:\QLNS_Nhom14
 .\mvnw.cmd test
+
+# Lần chạy SQLite đầu tiên: tự đặt mật khẩu admin, không dùng mật khẩu cố định trong mã nguồn.
+$env:QLNS_INITIAL_ADMIN_PASSWORD = Read-Host "Mật khẩu admin ban đầu"
 .\mvnw.cmd spring-boot:run
 ```
 
 Mở http://localhost:8080 để xem website quản lý nhà sách.
 API http://localhost:8080/api/system/status kiểm tra ứng dụng và kết nối CSDL.
-Mặc định dùng profile `demo` với H2 trong bộ nhớ, tự tạo 8 bảng và dữ liệu mẫu.
+Mặc định dùng profile `sqlite`, lưu bền vững tại `database/qlns.sqlite`. Biến
+`QLNS_INITIAL_ADMIN_PASSWORD` chỉ được dùng nếu cơ sở dữ liệu chưa có quản trị viên;
+mật khẩu được băm BCrypt và không được ghi vào tệp. Các lần chạy sau không cần đặt lại biến.
+Muốn chạy dữ liệu H2 dùng một lần, đặt `SPRING_PROFILES_ACTIVE=demo`.
 Tắt ứng dụng bằng Ctrl+C. Nếu cổng 8080 đã dùng, đặt `$env:PORT = '8081'` trước khi chạy.
 
 ## Chạy với MySQL
@@ -48,12 +54,14 @@ cd D:\QLNS_Nhom14
 $env:SPRING_PROFILES_ACTIVE = 'mysql'
 $env:DB_USERNAME = 'qlns_app'
 $env:DB_PASSWORD = 'MAT_KHAU_BAN_DA_DAT'
+$env:QLNS_INITIAL_ADMIN_PASSWORD = Read-Host "Mật khẩu admin ban đầu"
 .\mvnw.cmd spring-boot:run
 ```
 
 Nếu dùng host/port khác, đặt `DB_URL` theo mẫu trong `application-mysql.yml`.
 Profile MySQL không tự tạo hoặc sửa bảng. Hibernate `ddl-auto=none`; schema được quản lý bằng SQL tuần 1 và không tự sửa khi chạy JPA.
-API trạng thái chỉ kiểm tra kết nối; kiểm tra đủ bảng bằng script kiểm chứng dưới đây.
+API trạng thái chỉ kiểm tra kết nối; kiểm tra đủ bảng bằng script kiểm chứng. Tài khoản
+nhân viên chỉ do admin tạo trong mục **Nhân viên** và không thể tự nâng quyền.
 
 Để quay lại demo trong cùng cửa sổ:
 
@@ -86,6 +94,7 @@ Không cần cài Maven riêng. Linux/macOS dùng `./mvnw` thay `mvnw.cmd`.
 | src/main/resources/ | Cấu hình demo/MySQL, trang khởi tạo |
 | src/test/java/ | Kiểm thử tuần 1 và HTTP CRUD tuần 2, validation, rollback, khóa ngoại |
 | docs/04-nghiem-thu-tuan-1.md | Checklist bàn giao và kết quả kiểm chứng |
+| docs/12-bao-cao-kiem-thu.md | Báo cáo kiểm thử tổng hợp H2, SQLite, API, bảo mật và bản đóng gói |
 
 Tuần 2 đã có `entity`, `repository`, `service`, `dto`, `exception` và controller nghiệp vụ.
 Các endpoint CRUD: `/api/sach`, `/api/danh-muc`, `/api/nha-xuat-ban`, `/api/khach-hang`.
@@ -94,9 +103,18 @@ Danh sách có phân trang `?page=0&size=20`. Các API trả JSON; tuần 3 đã
 
 Tham khảo môi trường Spring Boot: https://docs.spring.io/spring-boot/system-requirements.html
 
-## Giao diện tuần 3
+## Giao diện và phân quyền
 
-Trang chủ: /; sách: /sach.html; quản trị: /quan-tri.html; khách hàng: /khach-hang.html; đăng nhập minh họa: /dang-nhap.html.
+Trang chủ: `/`; sách: `/sach.html`; giỏ hàng: `/gio-hang.html`; đơn hàng: `/don-hang.html`;
+hồ sơ: `/ca-nhan.html`; quản trị: `/quan-tri.html`; đăng nhập: `/dang-nhap.html`.
+
+- `ADMIN`: toàn bộ khu quản trị, tài khoản nhân viên, danh mục, NXB, sách, khách hàng và đơn hàng.
+- `NHAN_VIEN`: sách, khách hàng và xử lý đơn; không được tạo nhân viên hoặc sửa danh mục/NXB.
+- `KHACH_HANG`: hồ sơ, ảnh đại diện, yêu thích, giỏ hàng, đặt/xem/hủy đơn của chính mình.
+
+Profile `demo` mới có tài khoản mẫu `admin` và `bandoc`; SQLite/MySQL thật không tự tạo
+mật khẩu công khai. Ảnh đại diện dùng một tệp ổn định cho mỗi tài khoản; toàn bộ kho ảnh
+có giới hạn 500 MB để tránh tải tệp làm đầy ổ đĩa.
 
 Phân công, cách demo và kết quả kiểm chứng: [Bàn giao tuần 3](docs/07-ban-giao-tuan-3.md). Đăng nhập hiện là giao diện minh họa; xác thực và phân quyền triển khai tuần 4.
 
