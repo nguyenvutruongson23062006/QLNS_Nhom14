@@ -22,6 +22,7 @@ public class SqliteConfig {
    try {ScriptUtils.executeSqlScript(c,new org.springframework.core.io.support.EncodedResource(new ClassPathResource("db/sqlite/schema.sql"),"UTF-8"));
     applyMigration(c,RENTAL_MIGRATION_VERSION,"rental-system","db/sqlite/migrations/V2__rental.sql");
     applyMigration(c,3,"payment-reference-unique","db/sqlite/migrations/V3__payment_reference_unique.sql");
+    applyMigration(c,4,"rental-renewal-snapshots","db/sqlite/migrations/V4__rental_renewal_snapshots.sql");
     try(var stmt=c.createStatement();var result=stmt.executeQuery("SELECT COUNT(*) FROM vai_tro")) {
      if(result.next()&&result.getInt(1)==0)ScriptUtils.executeSqlScript(c,new org.springframework.core.io.support.EncodedResource(new ClassPathResource("db/data.sql"),"UTF-8"));
     }

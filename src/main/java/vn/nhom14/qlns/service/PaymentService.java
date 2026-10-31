@@ -70,9 +70,14 @@ public class PaymentService {
             throw error(HttpStatus.CONFLICT,"Mã giao dịch đã được dùng để đối soát khoản khác");
         jdbc.update("""
                 UPDATE thanh_toan SET trang_thai='DA_THANH_TOAN',ma_giao_dich_nha_cung_cap=?,
-                xac_nhan_boi=?,ngay_xac_nhan=CURRENT_TIMESTAMP,ghi_chu=? WHERE id=?
+                xac_nhan_boi=?,ngay_xac_nhan=CURRENT_TIMESTAMP,
+                ghi_chu=CASE WHEN tham_chieu_loai='GIA_HAN' THEN ghi_chu ELSE ? END WHERE id=?
                 """,providerReference,actor.accountId(),normalize(request.ghiChu()),id);
         if(payment.mucDich().equals("HOI_VIEN"))activateMembership(payment.thamChieuId());
+        else if(payment.mucDich().equals("THUE_SACH")&&payment.thamChieuLoai().equals("PHIEU_THUE"))
+            releasePaidRental(payment.thamChieuId(),actor.accountId());
+        else if(payment.mucDich().equals("THUE_SACH")&&payment.thamChieuLoai().equals("GIA_HAN"))
+            applyPaidRenewal(payment.id(),payment.thamChieuId(),payment.soTien(),actor.accountId());
         return jdbc.query("SELECT * FROM thanh_toan WHERE id=?",this::map,id).getFirst();
     }
 
@@ -85,6 +90,36 @@ public class PaymentService {
         LocalDate start=LocalDate.now();
         jdbc.update("UPDATE hoi_vien SET trang_thai='DANG_HOAT_DONG',ngay_bat_dau=?,ngay_het_han=?,ngay_cap_nhat=CURRENT_TIMESTAMP WHERE id=?",
                 start,start.plusYears(1),membershipId);
+    }
+
+    private void releasePaidRental(long rentalId,long accountId) {
+        var states=jdbc.query(lock("SELECT trang_thai FROM phieu_thue WHERE id=?"),(result,index)->result.getString(1),rentalId);
+        if(states.isEmpty())throw error(HttpStatus.CONFLICT,"Phiếu thuê của khoản thanh toán không còn tồn tại");
+        if(states.getFirst().equals("CHO_THANH_TOAN")) {
+            jdbc.update("UPDATE phieu_thue SET trang_thai='CHO_NHAN_SACH' WHERE id=?",rentalId);
+            jdbc.update("INSERT INTO nhat_ky_thue(phieu_thue_id,trang_thai_cu,trang_thai_moi,nguoi_thuc_hien_id,ghi_chu) VALUES(?,'CHO_THANH_TOAN','CHO_NHAN_SACH',?,'Đã đối soát phí thuê')",rentalId,accountId);
+        }
+    }
+
+    private void applyPaidRenewal(long paymentId,long rentalId,java.math.BigDecimal fee,long accountId) {
+        String note=jdbc.queryForObject("SELECT ghi_chu FROM thanh_toan WHERE id=?",String.class,paymentId);
+        if(note==null||!note.matches("GIA_HAN:[1-9][0-9]?"))throw error(HttpStatus.CONFLICT,"Khoản gia hạn thiếu số ngày hợp lệ");
+        int days=Integer.parseInt(note.substring("GIA_HAN:".length()));
+        var states=jdbc.query(lock("SELECT trang_thai FROM phieu_thue WHERE id=?"),(result,index)->result.getString(1),rentalId);
+        if(states.isEmpty()||!states.getFirst().equals("DANG_THUE"))throw error(HttpStatus.CONFLICT,"Phiếu không còn ở trạng thái đang thuê để gia hạn");
+        var details=jdbc.query(lock("SELECT id,ngay_hen_tra,so_lan_gia_han,so_lan_gia_han_toi_da FROM chi_tiet_phieu_thue WHERE phieu_thue_id=?"),
+                (result,index)->new Object[]{result.getLong(1),result.getString(2),result.getInt(3),result.getInt(4)},rentalId);
+        for(Object[] detail:details)if((int)detail[2]>=(int)detail[3])throw error(HttpStatus.CONFLICT,"Một bản sách đã hết lượt gia hạn");
+        for(Object[] detail:details)jdbc.update("UPDATE chi_tiet_phieu_thue SET ngay_hen_tra=?,so_lan_gia_han=so_lan_gia_han+1 WHERE id=?",
+                LocalDate.parse((String)detail[1]).plusDays(days),(long)detail[0]);
+        jdbc.update("UPDATE phieu_thue SET tong_tien_thue=tong_tien_thue+? WHERE id=?",fee,rentalId);
+        jdbc.update("INSERT INTO nhat_ky_thue(phieu_thue_id,trang_thai_cu,trang_thai_moi,nguoi_thuc_hien_id,ghi_chu) VALUES(?,'DANG_THUE','DANG_THUE',?,?)",
+                rentalId,accountId,"Đã đối soát và gia hạn "+days+" ngày");
+    }
+
+    public PaymentResponse getLatestForRental(long rentalId) {
+        var rows=jdbc.query("SELECT * FROM thanh_toan WHERE tham_chieu_id=? AND tham_chieu_loai IN ('PHIEU_THUE','GIA_HAN','TRA_PHIEU_THUE') ORDER BY id DESC LIMIT 1",this::map,rentalId);
+        return rows.isEmpty()?null:rows.getFirst();
     }
 
     private PaymentResponse map(ResultSet result,int index)throws SQLException {

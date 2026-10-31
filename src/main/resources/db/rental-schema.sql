@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS schema_migration (
 );
 INSERT INTO schema_migration(version, description) VALUES (2, 'rental-system');
 INSERT INTO schema_migration(version, description) VALUES (3, 'payment-reference-unique');
+INSERT INTO schema_migration(version, description) VALUES (4, 'rental-renewal-snapshots');
 
 CREATE TABLE IF NOT EXISTS hoi_vien (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -153,11 +154,15 @@ CREATE TABLE IF NOT EXISTS chi_tiet_phieu_thue (
     so_ngay_tre INT NOT NULL DEFAULT 0,
     phi_tre DECIMAL(15,2) NOT NULL DEFAULT 0,
     phi_hu_hong DECIMAL(15,2) NOT NULL DEFAULT 0,
+    so_ngay_thue INT NOT NULL DEFAULT 14,
+    so_lan_gia_han INT NOT NULL DEFAULT 0,
+    so_lan_gia_han_toi_da INT NOT NULL DEFAULT 1,
     CONSTRAINT uq_chi_tiet_phieu_ban_sao UNIQUE (phieu_thue_id, ban_sao_id),
     CONSTRAINT fk_chi_tiet_phieu FOREIGN KEY (phieu_thue_id) REFERENCES phieu_thue(id),
     CONSTRAINT fk_chi_tiet_ban_sao FOREIGN KEY (ban_sao_id) REFERENCES ban_sao_sach(id),
     CONSTRAINT ck_chi_tiet_tien CHECK (gia_thue_ngay >= 0 AND tien_coc >= 0 AND phi_tre_ngay >= 0 AND phi_tre >= 0 AND phi_hu_hong >= 0),
     CONSTRAINT ck_chi_tiet_ngay_tre CHECK (so_ngay_tre >= 0),
+    CONSTRAINT ck_chi_tiet_gia_han CHECK (so_ngay_thue BETWEEN 1 AND 90 AND so_lan_gia_han BETWEEN 0 AND 10 AND so_lan_gia_han_toi_da BETWEEN 0 AND 10),
     CONSTRAINT ck_chi_tiet_tinh_trang_truoc CHECK (tinh_trang_truoc IN ('MOI','NHU_MOI','TOT','KHA','CU','HU_HONG')),
     CONSTRAINT ck_chi_tiet_tinh_trang_sau CHECK (tinh_trang_sau IS NULL OR tinh_trang_sau IN ('MOI','NHU_MOI','TOT','KHA','CU','HU_HONG'))
 );
