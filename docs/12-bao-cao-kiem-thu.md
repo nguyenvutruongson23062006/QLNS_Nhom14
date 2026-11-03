@@ -1,122 +1,120 @@
 # BÁO CÁO KIỂM THỬ VÀ NGHIỆM THU HỆ THỐNG
 
-**Đề tài:** Hệ thống quản lý nhà sách Nhóm 14  
-**Ngày kiểm thử:** 29/10/2026  
-**Phiên bản kiểm thử:** Mã nguồn hiện tại của `QLNS_Nhom14_GitHub`  
-**Môi trường:** Windows, Java 21.0.11, Spring Boot 4.1.1, Maven Wrapper, H2 và SQLite 3.50.3
+**Đề tài:** Hệ thống quản lý nhà sách Nhóm 14
 
-## 1. Mục tiêu kiểm thử
+**Ngày kiểm thử:** 03/11/2026
 
-- Xác minh ứng dụng biên dịch, chạy test và đóng gói được.
-- Kiểm tra các chức năng CRUD, hồ sơ, yêu thích, đăng nhập và phân quyền.
-- Kiểm tra luồng giỏ hàng, đặt hàng COD, chống tạo đơn trùng và cập nhật tồn kho.
-- Kiểm tra quản lý tài khoản nhân viên và giới hạn quyền theo vai trò.
-- Kiểm tra các lỗi hồi quy liên quan đến SQLite và giới hạn mật khẩu BCrypt.
-- Ghi rõ phần đã xác minh và phần chưa đủ điều kiện kết luận.
+**Phiên bản:** nhánh `feature/rental-system`
 
-## 2. Phạm vi và phương pháp
+**Môi trường:** Windows, Java 21.0.11, Spring Boot 4.1.1, H2 và SQLite 3.50.3
 
-| Nhóm | Phương pháp | Phạm vi |
-|---|---|---|
-| Kiểm thử đơn vị/tích hợp | Maven Surefire, Spring Boot Test | Service, controller, validation, transaction và CSDL |
-| Kiểm thử HTTP | Server ngẫu nhiên trong test và runtime JAR | Đăng nhập, CSRF, đăng ký, đổi mật khẩu, CRUD và đơn hàng |
-| Kiểm thử CSDL | H2 và SQLite | Ràng buộc, khóa ngoại, tồn kho, idempotency và rollback |
-| Kiểm tra frontend | `node --check` và kiểm tra mã được phục vụ từ JAR | Cú pháp JavaScript, giỏ hàng theo tài khoản và phân trang |
-| Kiểm tra đóng gói | Maven Package | Tạo JAR Spring Boot có thể khởi động |
+## 1. Mục tiêu và phạm vi
+
+Lần nghiệm thu này kiểm tra cả nền tảng nhà sách và phần mở rộng rental: xác thực/phân quyền,
+CRUD, hồ sơ/yêu thích, đơn COD, hội viên 50.000 đồng, VietQR chờ đối soát, thuê online/tại
+quầy, bản sao vật lý, giao-trả-gia hạn, sách cũ và đóng gói JAR.
+
+| Nhóm | Phương pháp |
+|---|---|
+| Java/API | Maven Surefire, Spring Boot Test, HTTP thật trên cổng ngẫu nhiên |
+| CSDL | Cùng bộ nghiệp vụ trên H2 và SQLite, kiểm tra transaction/ràng buộc/idempotency |
+| Frontend | `node --check`, chạy JAR demo và thao tác thật trong trình duyệt |
+| Đóng gói | Maven Package và khởi động JAR |
+| Dữ liệu bền vững | Migration có version, `integrity_check`, `foreign_key_check`, đếm dữ liệu trước/sau |
 
 Không dùng `maven.test.skip`; các test đều được biên dịch và thực thi thật.
 
-## 3. Kết quả test tự động
-
-Lệnh thực hiện:
+## 2. Kết quả tự động
 
 ```powershell
 .\mvnw.cmd -B test
 ```
 
-Kết quả tổng hợp: **52 test đạt, 0 failure, 0 error, 0 skipped**.
+**72 test đạt, 0 failure, 0 error, 0 skipped.**
 
-| Test suite | Số test | Failure | Error | Skipped |
-|---|---:|---:|---:|---:|
-| `HoSoIntegrationTests` | 2 | 0 | 0 | 0 |
-| `OrderAndStaffIntegrationTests` | 6 | 0 | 0 | 0 |
-| `QlnsApplicationTests` | 1 | 0 | 0 | 0 |
-| `SqliteHoSoTests` | 2 | 0 | 0 | 0 |
-| `SqliteIntegrationTests` | 16 | 0 | 0 | 0 |
-| `SqliteYeuThichTests` | 4 | 0 | 0 | 0 |
-| `WeekOneIntegrationTests` | 4 | 0 | 0 | 0 |
-| `WeekTwoIntegrationTests` | 13 | 0 | 0 | 0 |
-| `YeuThichIntegrationTests` | 4 | 0 | 0 | 0 |
-| **Tổng** | **52** | **0** | **0** | **0** |
+| Test suite | Test |
+|---|---:|
+| `HoSoIntegrationTests` / `SqliteHoSoTests` | 2 / 2 |
+| `MembershipPaymentIntegrationTests` / `SqliteMembershipPaymentTests` | 4 / 4 |
+| `RentalIntegrationTests` / `SqliteRentalTests` | 4 / 4 |
+| `UsedBookIntegrationTests` / `SqliteUsedBookTests` | 1 / 1 |
+| `OrderAndStaffIntegrationTests` | 6 |
+| `SqliteIntegrationTests` | 17 |
+| `YeuThichIntegrationTests` / `SqliteYeuThichTests` | 4 / 4 |
+| `WeekOneIntegrationTests` / `WeekTwoIntegrationTests` | 4 / 14 |
+| `QlnsApplicationTests` | 1 |
+| **Tổng** | **72** |
 
-## 4. Các ca kiểm thử nghiệp vụ chính
+## 3. Ca nghiệp vụ quan trọng
 
-| Mã | Ca kiểm thử | Kết quả mong đợi | Kết quả |
-|---|---|---|---|
-| TC-AUTH-01 | Đăng nhập đúng tài khoản | HTTP 200, trả đúng vai trò | Đạt |
-| TC-AUTH-02 | Khách truy cập API quản trị | HTTP 403 | Đạt |
-| TC-AUTH-03 | Nhân viên truy cập quản lý tài khoản nhân viên | HTTP 403 | Đạt |
-| TC-AUTH-04 | Đổi mật khẩu trên SQLite | HTTP 200, mật khẩu cũ hết hiệu lực | Đạt |
-| TC-AUTH-05 | Đăng ký bằng mật khẩu Unicode vượt 72 byte | HTTP 400, không tạo tài khoản | Đạt |
-| TC-CRUD-01 | CRUD sách, danh mục, nhà xuất bản và khách hàng | Dữ liệu lưu đúng, validation hoạt động | Đạt |
-| TC-DB-01 | Tồn kho âm hoặc khóa ngoại sai | CSDL từ chối thay đổi | Đạt |
-| TC-ORDER-01 | Server tính giá từ CSDL | Không tin giá gửi từ trình duyệt | Đạt |
-| TC-ORDER-02 | Gửi lại cùng `clientRequestId` | Không tạo đơn/trừ tồn lần hai | Đạt |
-| TC-ORDER-03 | Hai khách mua cuốn cuối cùng đồng thời | Một thành công, một HTTP 409 | Đạt |
-| TC-ORDER-04 | Hủy đơn nhiều lần | Chỉ hoàn tồn một lần | Đạt |
-| TC-ORDER-05 | Khách đọc đơn của khách khác | HTTP 404 | Đạt |
-| TC-STAFF-01 | Admin tạo nhân viên | Tài khoản có vai trò `NHAN_VIEN` | Đạt |
-| TC-STAFF-02 | Nhân viên sửa sách nhưng không quản lý tài khoản | Quyền backend đúng thiết kế | Đạt |
-| TC-UI-01 | Giỏ hàng của hai tài khoản trên cùng trình duyệt | Dùng khóa lưu trữ riêng theo `username` | Đạt qua kiểm tra mã/runtime |
-| TC-UI-02 | Danh sách đơn và nhân viên vượt kích thước trang | Có nút Trước/Sau, gọi đúng `page` | Đạt qua kiểm tra mã/runtime |
+| Mã | Ca kiểm thử | Kết quả |
+|---|---|---|
+| AUTH-01 | Khách/nhân viên gọi API vượt quyền | 403; quyền được chặn tại backend |
+| ORDER-01 | Server tự tính giá, khóa tồn, gửi lại cùng mã | Không tin giá client, không trừ tồn hai lần |
+| ORDER-02 | Hai khách mua cuốn cuối | Một thành công, một 409 |
+| MEMBER-01 | Đăng ký một thẻ 50.000 đồng, nhận tại quầy/giao hàng | Đúng phí, không tạo hồ sơ thứ hai |
+| MEMBER-02 | Khách tự đối soát hoặc phát hành thẻ trước thanh toán | Bị từ chối |
+| PAY-01 | Hai khoản dùng cùng mã giao dịch | Khoản thứ hai bị 409 |
+| RENT-01 | Chưa có thẻ hoạt động/kích hoạt nhưng thuê | Bị từ chối |
+| RENT-02 | Phân bổ bản sao và giới hạn 5 bản đang giữ | Transaction giữ đúng bản, vượt giới hạn bị từ chối |
+| RENT-03 | Gửi lại mã yêu cầu cùng/khác nội dung | Cùng nội dung không tạo trùng; khác nội dung bị 409 |
+| RENT-04 | Giao trước duyệt/thanh toán | Bị từ chối |
+| RENT-05 | Gia hạn VietQR | Chỉ cộng ngày sau đối soát |
+| RENT-06 | Trả trễ/hư hỏng | Tính phí theo server, cập nhật tình trạng từng bản |
+| USED-01 | Đưa bản chưa từng hoàn trả sang sách cũ | Bị từ chối |
+| USED-02 | Giá sách cũ bằng/cao hơn giá mới | Bị từ chối |
+| USED-03 | Hai khách đặt cùng độc bản | Chỉ một đơn thành công |
+| USED-04 | Hủy/hoàn thành đơn sách cũ | Hủy mở bán lại; hoàn thành chuyển bản sang `DA_BAN` |
 
-## 5. Kiểm thử runtime SQLite sau đóng gói
+## 4. Kiểm thử trình duyệt trên JAR demo
 
-Ứng dụng được đóng gói bằng:
+JAR chạy tại `http://localhost:8114` với profile `demo`. Các bước sau đã được thao tác qua
+giao diện, không thay dữ liệu SQLite chính:
 
-```powershell
-.\mvnw.cmd -B -DskipTests package
-```
+1. Admin cấu hình Clean Code, giá thuê 3.000 đồng/ngày, cọc 50.000 đồng và thêm 2 bản sao.
+2. Bạn đọc thấy nút **Cần kích hoạt thẻ hội viên**, đăng ký thẻ và nhận khoản 50.000 đồng
+   ở trạng thái **Chờ đối soát**.
+3. Admin đối soát, phát hành và kích hoạt; bạn đọc thấy đúng hiệu lực một năm.
+4. Bạn đọc thuê online; admin duyệt, đối soát 92.000 đồng, giao và nhận trả với tình trạng thật.
+5. Bản trả xuất hiện trong ứng viên sách cũ, được tạo mục, admin duyệt giá 180.950 đồng.
+6. Bạn đọc đặt mua độc bản COD; admin chuyển đơn qua xác nhận, giao và hoàn thành.
+7. Admin tạo thêm phiếu thuê tại quầy, nhập mã phiếu thu, giao và nhận trả thành công.
+8. Console trình duyệt ở các màn hình kết thúc không ghi nhận lỗi JavaScript.
 
-JAR `target/qlns-0.0.1-SNAPSHOT.jar` khởi động thành công với profile `sqlite,test`.
+Trong lúc kiểm thử đã phát hiện và sửa các lỗi UI: người đã đăng nhập nhưng chưa kích hoạt thẻ
+bị nhắc “Đăng nhập”; giao dịch thất bại bị mô tả như đã đối soát; một số trạng thái chưa Việt
+hóa; đơn sách cũ tạo mã gửi mới ở mọi lần thử lại dù response có thể bị mất.
 
-| Kiểm tra runtime | Kết quả |
-|---|---|
-| Đăng nhập bạn đọc mẫu | HTTP 200 |
-| Đổi mật khẩu | HTTP 200 |
-| Đăng nhập lại bằng mật khẩu mới | HTTP 200 |
-| Đăng ký mật khẩu Unicode 40 ký tự `đ` | HTTP 400 do vượt 72 byte UTF-8 |
-| API phân trang đơn hàng | Trả cấu trúc trang hợp lệ |
-| API phân trang tài khoản nhân viên | Trả cấu trúc trang hợp lệ |
-| JavaScript mới được phục vụ từ JAR | Có mã giỏ hàng `v2` và phân trang mới |
+## 5. SQLite bền vững và migration
 
-Tiến trình runtime kiểm thử đã được dừng và cổng kiểm thử đã được giải phóng.
+- Có bản sao lưu pre-rental ở ngoài repository trước khi chạy migration.
+- Migration version 2, 3 và 4 chỉ chạy một lần; khởi động lại không tạo bảng/dữ liệu lặp.
+- Dữ liệu nền được giữ nguyên: 40 sách và 33 nhà xuất bản.
+- `PRAGMA integrity_check` trả `ok`; `PRAGMA foreign_key_check` không có dòng lỗi.
+- Database runtime và file sao lưu không được đưa vào commit.
 
-## 6. Các lỗi phát hiện và trạng thái xử lý
+## 6. Các lỗi đã xử lý đáng chú ý
 
-| Lỗi | Mức độ | Nguyên nhân | Trạng thái |
-|---|---|---|---|
-| Đổi mật khẩu trả 500 trên SQLite | Cao | SQLite không hỗ trợ `SELECT ... FOR UPDATE` | Đã sửa và có test hồi quy |
-| Đăng ký mật khẩu Unicode dài trả 500 | Cao | Bean Validation đếm ký tự, BCrypt giới hạn theo byte | Đã sửa và có test hồi quy |
-| Giỏ hàng dùng chung giữa nhiều tài khoản | Trung bình | Một khóa `localStorage` dùng cho mọi người dùng | Đã tách theo tài khoản |
-| Đơn hàng/nhân viên chỉ hiển thị 100 bản ghi đầu | Trung bình | Frontend cố định `page=0&size=100` | Đã bổ sung phân trang |
+| Lỗi | Mức độ | Cách xử lý |
+|---|---|---|
+| Checkout/thuê có thể bị gửi lại sau mất mạng | Cao | `clientRequestId`, so sánh toàn bộ nội dung và transaction |
+| Một bản sách cũ có thể bị hai người tranh mua | Cao | Khóa/trạng thái nguyên tử, 409 cho người đến sau |
+| VietQR có thể bị hiểu là đã thanh toán chỉ vì có QR | Cao | Luôn chờ đối soát, mã giao dịch duy nhất, quyền staff/admin |
+| Bản sao có thể sai vòng đời khi hủy/hoàn tất | Cao | Trạng thái riêng, hoàn lại khi hủy, `DA_BAN` khi hoàn thành |
+| Retry sách cũ trên UI sinh mã mới | Trung bình | Lưu mã theo tài khoản+nội dung đến khi nhận response thành công |
+| Nhãn thanh toán/thẻ gây hiểu sai | Trung bình | Hiển thị trạng thái theo từng trường hợp và Việt hóa |
 
-## 7. Giới hạn kiểm thử còn lại
+## 7. Giới hạn chưa được chứng minh
 
-- Chưa chạy runtime MySQL vì máy kiểm thử chưa có dịch vụ và database MySQL của bài.
-- Chưa lặp lại kiểm thử click-by-click bằng trình duyệt sau thay đổi cuối; frontend hiện mới được
-  xác minh bằng cú pháp JavaScript, nội dung JAR và API phân trang.
-- Chưa kiểm thử tải lớn nhiều người dùng hoặc upload ảnh đồng thời trong thời gian dài.
-- Chưa kiểm thử trên thiết bị di động và các trình duyệt khác nhau.
+- Chưa chạy runtime MySQL vì máy nghiệm thu không có database MySQL dành cho bài. SQL đã được
+  bổ sung nhưng không được ghi là đã kiểm thử runtime.
+- VietQR chưa có webhook ngân hàng; đối soát là thủ công.
+- Chưa tích hợp hãng vận chuyển, cổng hoàn tiền cọc hoặc thông báo email/SMS.
+- Chưa kiểm thử tải lớn, mất điện giữa transaction hoặc nhiều trình duyệt/OS tự động.
 
-Các giới hạn trên không được ghi là “đã đạt” vì chưa có bằng chứng thực thi tương ứng.
+## 8. Kết luận
 
-## 8. Kết luận nghiệm thu
-
-Bản hiện tại **đạt kiểm thử tự động và runtime SQLite** trong phạm vi đã nêu: 52/52 test đạt,
-đóng gói JAR thành công, các lỗi mật khẩu gây HTTP 500 đã được sửa và có test chống tái phát.
-Các chức năng chính về CRUD, phân quyền, hồ sơ, yêu thích, đơn hàng, tồn kho và nhân viên có
-bằng chứng kiểm thử.
-
-Trước khi triển khai thật trên MySQL hoặc đưa lên Internet, cần hoàn thành kiểm thử runtime
-MySQL, kiểm thử trình duyệt cuối cùng, kiểm thử tải và bổ sung cơ chế migration/sao lưu CSDL.
+Bản hiện tại đạt kiểm thử tự động H2/SQLite, đóng gói và luồng trình duyệt chính trong phạm vi
+nêu trên. Các chức năng rental và sách cũ có kiểm soát quyền, transaction và kiểm thử hồi quy.
+Không nên tuyên bố sẵn sàng vận hành thương mại cho đến khi kiểm thử MySQL, webhook thanh toán,
+sao lưu/khôi phục và tải đồng thời được thực hiện trong môi trường triển khai thật.
