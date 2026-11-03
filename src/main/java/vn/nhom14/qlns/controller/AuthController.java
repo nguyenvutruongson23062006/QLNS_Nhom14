@@ -27,6 +27,12 @@ public class AuthController {
  public Map<String,String> register(@Valid @RequestBody Register r){
   if(r.password().getBytes(StandardCharsets.UTF_8).length>72)
    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Mật khẩu không được vượt quá 72 byte UTF-8");
+  Integer countUsername=jdbc.queryForObject("SELECT COUNT(*) FROM tai_khoan WHERE ten_dang_nhap=?",Integer.class,r.username());
+  if(countUsername!=null&&countUsername>0)
+   throw new ResponseStatusException(HttpStatus.CONFLICT,"Tên đăng nhập đã tồn tại. Vui lòng chọn tên khác.");
+  Integer countEmail=jdbc.queryForObject("SELECT COUNT(*) FROM tai_khoan WHERE email=?",Integer.class,r.email());
+  if(countEmail!=null&&countEmail>0)
+   throw new ResponseStatusException(HttpStatus.CONFLICT,"Email đã được sử dụng bởi tài khoản khác.");
   Long role=jdbc.queryForObject("SELECT id FROM vai_tro WHERE ma_vai_tro='KHACH_HANG'",Long.class);
   jdbc.update("INSERT INTO tai_khoan(ten_dang_nhap,mat_khau_hash,email,vai_tro_id) VALUES (?,?,?,?)",r.username(),encoder.encode(r.password()),r.email(),role);
   Long id=jdbc.queryForObject("SELECT id FROM tai_khoan WHERE ten_dang_nhap=?",Long.class,r.username());

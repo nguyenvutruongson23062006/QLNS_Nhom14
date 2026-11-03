@@ -77,10 +77,16 @@ public class SecurityConfig {
                     }))
             .logout(l -> l.logoutUrl("/api/auth/logout")
                     .logoutSuccessHandler((req, res, auth) -> res.setStatus(204)))
-            .exceptionHandling(e -> e.authenticationEntryPoint((req, res, ex) -> {
-                if (req.getRequestURI().startsWith("/api/")) res.sendError(401);
-                else res.sendRedirect("/dang-nhap.html");
-            }))
+            .exceptionHandling(e -> e
+                .authenticationEntryPoint((req, res, ex) -> {
+                    if (req.getRequestURI().startsWith("/api/")) res.sendError(401);
+                    else res.sendRedirect("/dang-nhap.html");
+                })
+                .accessDeniedHandler((req, res, ex) -> {
+                    if (req.getRequestURI().startsWith("/api/")) res.sendError(403);
+                    else res.sendRedirect("/");
+                })
+            )
             .addFilterBefore(new AccountSessionFilter(jdbc), AuthorizationFilter.class);
         return http.build();
     }
@@ -113,6 +119,22 @@ public class SecurityConfig {
                             WHERE t.ten_dang_nhap=? AND NOT EXISTS(
                                 SELECT 1 FROM khach_hang k WHERE k.tai_khoan_id=t.id)
                             """, account[0]);
+                    Long khachHangId = jdbc.queryForObject(
+                            "SELECT k.id FROM khach_hang k JOIN tai_khoan t ON t.id=k.tai_khoan_id WHERE t.ten_dang_nhap=?",
+                            Long.class, account[0]);
+                    if (khachHangId != null && jdbc.queryForObject("SELECT COUNT(*) FROM hoi_vien WHERE khach_hang_id=?", Integer.class, khachHangId) == 0) {
+                        String suffix = java.util.UUID.randomUUID().toString().replace("-", "");
+                        jdbc.update("""
+                                INSERT INTO hoi_vien(khach_hang_id,ma_hoi_vien,ngay_bat_dau,ngay_het_han,trang_thai)
+                                VALUES(?,?,?,?,'DANG_HOAT_DONG')
+                                """, khachHangId, "HV" + suffix.substring(0, 16).toUpperCase(java.util.Locale.ROOT),
+                                java.time.LocalDate.now(), java.time.LocalDate.now().plusYears(1));
+                        Long hoiVienId = jdbc.queryForObject("SELECT id FROM hoi_vien WHERE khach_hang_id=?", Long.class, khachHangId);
+                        jdbc.update("""
+                                INSERT INTO the_thanh_vien(hoi_vien_id,ma_the,token_quet,phuong_thuc_nhan,trang_thai,ngay_phat_hanh,ngay_kich_hoat)
+                                VALUES(?,?,?,'TAI_QUAY','DA_KICH_HOAT',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
+                                """, hoiVienId, "THE" + suffix.substring(0, 16).toUpperCase(java.util.Locale.ROOT), java.util.UUID.randomUUID().toString());
+                    }
                 }
             }
         };

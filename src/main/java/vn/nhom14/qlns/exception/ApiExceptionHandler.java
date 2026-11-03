@@ -35,9 +35,26 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> conflict(DataIntegrityViolationException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(409,
-                "Dữ liệu bị trùng hoặc bản ghi đang được sử dụng. Kiểm tra mã sách, ISBN, tên danh mục và tên NXB.", Map.of()));
+        String msg = ex.getMessage() == null ? "" : ex.getMessage().toLowerCase();
+        String detail;
+        if (msg.contains("ten_dang_nhap")) {
+            detail = "Tên đăng nhập đã tồn tại. Vui lòng chọn tên khác.";
+        } else if (msg.contains("email")) {
+            detail = "Email đã được sử dụng bởi tài khoản khác.";
+        } else if (msg.contains("isbn")) {
+            detail = "ISBN đã tồn tại. Kiểm tra lại mã sách.";
+        } else if (msg.contains("ma_sach")) {
+            detail = "Mã sách đã tồn tại. Kiểm tra lại mã sách.";
+        } else if (msg.contains("danh_muc") || msg.contains("ten_danh_muc")) {
+            detail = "Tên danh mục đã tồn tại.";
+        } else if (msg.contains("nha_xuat_ban") || msg.contains("ten_nxb")) {
+            detail = "Tên NXB đã tồn tại.";
+        } else {
+            detail = "Dữ liệu bị trùng hoặc bản ghi đang được sử dụng. Kiểm tra mã sách, ISBN, tên danh mục và tên NXB.";
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(409, detail, Map.of()));
     }
+
     @ExceptionHandler(org.springframework.orm.jpa.JpaSystemException.class)
     public ResponseEntity<ApiError> sqliteConstraint(org.springframework.orm.jpa.JpaSystemException ex) {
         for(Throwable cause=ex;cause!=null;cause=cause.getCause()) {
