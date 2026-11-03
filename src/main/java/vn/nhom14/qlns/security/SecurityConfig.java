@@ -37,7 +37,7 @@ public class SecurityConfig {
 
     @Bean SecurityFilterChain security(HttpSecurity http, JdbcTemplate jdbc) throws Exception {
         http.authorizeHttpRequests(a -> a
-                .requestMatchers("/", "/index.html", "/sach.html", "/chi-tiet.html",
+                .requestMatchers("/", "/index.html", "/sach.html", "/chi-tiet.html", "/thue-sach.html", "/sach-cu.html",
                         "/dang-nhap.html", "/admin-login.html", "/dang-ky.html",
                         "/css/**", "/js/**", "/images/**", "/error").permitAll()
                 .requestMatchers("/quan-tri.html", "/khach-hang.html").hasAnyRole("ADMIN", "NHAN_VIEN")
@@ -51,6 +51,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/rental-catalog/**").permitAll()
                 .requestMatchers("/api/rental-catalog/**").hasAnyRole("ADMIN", "NHAN_VIEN")
                 .requestMatchers("/api/rentals/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/used-books").permitAll()
+                .requestMatchers("/api/used-books/manage", "/api/used-books/candidates").hasAnyRole("ADMIN", "NHAN_VIEN")
+                .requestMatchers(HttpMethod.POST, "/api/used-books/orders").hasRole("KHACH_HANG")
+                .requestMatchers("/api/used-books/**").hasAnyRole("ADMIN", "NHAN_VIEN")
                 .requestMatchers("/api/ho-so/**", "/api/yeu-thich/**", "/api/anh/dai-dien").hasRole("KHACH_HANG")
                 .requestMatchers("/api/anh/sach").hasAnyRole("ADMIN", "NHAN_VIEN")
                 .requestMatchers("/api/orders/**").authenticated()

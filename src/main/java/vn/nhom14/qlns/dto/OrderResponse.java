@@ -6,5 +6,6 @@ public record OrderResponse(Long id,String maDonHang,Long khachHangId,String hoT
     String trangThai,String tenNguoiNhan,String soDienThoaiNhan,String diaChiGiao,
     BigDecimal tongTien,String ghiChu,LocalDateTime ngayDat,List<Item> items) {
     public record Item(Long sachId,String maSach,String tenSach,String hinhAnh,
-                       int soLuong,BigDecimal donGia,BigDecimal thanhTien) {}
+                       int soLuong,BigDecimal donGia,BigDecimal thanhTien,
+                       String loaiHang,Long sachCuId,String tinhTrang) {}
 }

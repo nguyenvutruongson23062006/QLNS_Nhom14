@@ -17,6 +17,9 @@ public class CurrentActorService {
         public void requireStaff() {
             if (!staff()) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ nhân viên được thực hiện thao tác này");
         }
+        public void requireAdmin() {
+            if (!role.equals("ADMIN")) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ quản trị viên được duyệt giá bán sách cũ");
+        }
         public long requireCustomer() {
             if (!role.equals("KHACH_HANG") || customerId==null)
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản không có hồ sơ khách hàng");

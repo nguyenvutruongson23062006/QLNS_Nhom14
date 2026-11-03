@@ -119,7 +119,7 @@ public class OrderService {
             if(book.stock()<entry.getValue())throw error(HttpStatus.CONFLICT,"Sách "+book.name()+" chỉ còn "+book.stock()+" cuốn");
             BigDecimal line=book.price().multiply(BigDecimal.valueOf(entry.getValue()));total=total.add(line);
             if(total.compareTo(MAX_TOTAL)>0)throw error(HttpStatus.BAD_REQUEST,"Tổng tiền đơn hàng vượt giới hạn");
-            items.add(new OrderResponse.Item(book.id(),book.code(),book.name(),book.image(),entry.getValue(),book.price(),line));
+            items.add(new OrderResponse.Item(book.id(),book.code(),book.name(),book.image(),entry.getValue(),book.price(),line,"SACH_MOI",null,null));
         }
         BigDecimal orderTotal=total;var key=new GeneratedKeyHolder();
         jdbc.update(connection->{
@@ -169,6 +169,18 @@ public class OrderService {
                 if((long)stock+item[1]>Integer.MAX_VALUE)throw error(HttpStatus.CONFLICT,"Tồn kho vượt giới hạn");
                 jdbc.update("UPDATE sach SET so_luong_ton=so_luong_ton+? WHERE id=?",item[1],item[0]);
             }
+            jdbc.update("""
+                    UPDATE sach_cu SET trang_thai='DANG_BAN' WHERE id IN (
+                        SELECT sach_cu_id FROM chi_tiet_don_hang_sach_cu WHERE don_hang_id=?)
+                    AND trang_thai='DA_BAN'
+                    """,id);
+        }
+        if(state.equals("HOAN_THANH")){
+            jdbc.update("""
+                    UPDATE ban_sao_sach SET trang_thai='DA_BAN' WHERE id IN (
+                        SELECT sc.ban_sao_id FROM sach_cu sc JOIN chi_tiet_don_hang_sach_cu c ON c.sach_cu_id=sc.id
+                        WHERE c.don_hang_id=?) AND trang_thai='CHO_BAN_CU'
+                    """,id);
         }
         if(user.staff())jdbc.update("UPDATE don_hang SET trang_thai=?,nhan_vien_id=? WHERE id=?",state,user.id(),id);
         else jdbc.update("UPDATE don_hang SET trang_thai=? WHERE id=?",state,id);
@@ -193,7 +205,17 @@ public class OrderService {
                 """+placeholders+") ORDER BY c.don_hang_id,c.sach_id",r->{
             int qty=r.getInt("so_luong");BigDecimal price=r.getBigDecimal("don_gia");
             items.computeIfAbsent(r.getLong("don_hang_id"),k->new ArrayList<>()).add(new OrderResponse.Item(r.getLong("sach_id"),
-                    r.getString("ma_sach"),r.getString("ten_sach"),r.getString("hinh_anh"),qty,price,price.multiply(BigDecimal.valueOf(qty))));
+                    r.getString("ma_sach"),r.getString("ten_sach"),r.getString("hinh_anh"),qty,price,price.multiply(BigDecimal.valueOf(qty)),"SACH_MOI",null,null));
+        },headers.stream().map(OrderResponse::id).toArray());
+        jdbc.query("""
+                SELECT c.don_hang_id,sc.id AS sach_cu_id,b.sach_id,s.ma_sach,s.ten_sach,
+                    COALESCE(sc.hinh_anh,s.hinh_anh) AS hinh_anh,c.don_gia,sc.tinh_trang
+                FROM chi_tiet_don_hang_sach_cu c JOIN sach_cu sc ON sc.id=c.sach_cu_id
+                JOIN ban_sao_sach b ON b.id=sc.ban_sao_id JOIN sach s ON s.id=b.sach_id
+                WHERE c.don_hang_id IN (
+                """+placeholders+") ORDER BY c.don_hang_id,sc.id",r->{
+            BigDecimal price=r.getBigDecimal("don_gia");items.computeIfAbsent(r.getLong("don_hang_id"),k->new ArrayList<>()).add(
+                    new OrderResponse.Item(r.getLong("sach_id"),r.getString("ma_sach"),r.getString("ten_sach"),r.getString("hinh_anh"),1,price,price,"SACH_CU",r.getLong("sach_cu_id"),r.getString("tinh_trang")));
         },headers.stream().map(OrderResponse::id).toArray());
         return headers.stream().map(o->new OrderResponse(o.id(),o.maDonHang(),o.khachHangId(),o.hoTenKhachHang(),o.trangThai(),o.tenNguoiNhan(),
                 o.soDienThoaiNhan(),o.diaChiGiao(),o.tongTien(),o.ghiChu(),o.ngayDat(),List.copyOf(items.getOrDefault(o.id(),List.of())))).toList();
