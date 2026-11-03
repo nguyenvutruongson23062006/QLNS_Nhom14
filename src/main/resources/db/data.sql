@@ -96,3 +96,184 @@ VALUES
     ('S038', 'The Body Keeps the Score', 'Bessel van der Kolk', '9780143127741', 10, 31, 2015, 269000, 12, 'Khảo sát tác động của sang chấn lên cơ thể và tâm trí cùng các hướng tiếp cận phục hồi.', '/images/books/s038.jpg'),
     ('S039', 'Outlive', 'Peter Attia; Bill Gifford', '9780593236598', 10, 32, 2023, 319000, 15, 'Trình bày cách tiếp cận chủ động đối với sức khỏe lâu dài, phòng ngừa bệnh mạn tính và nâng cao chất lượng sống.', '/images/books/s039.jpg'),
     ('S040', 'The Life-Changing Magic of Tidying Up', 'Marie Kondo', '9781607747307', 10, 33, 2014, 199000, 20, 'Phương pháp sắp xếp không gian sống dựa trên việc giữ lại những đồ vật thực sự có ý nghĩa.', '/images/books/s040.jpg');
+
+
+-- Cấu hình cho thuê 10 đầu sách (gia_thue_ngay, tien_coc, so_ngay_mac_dinh, so_lan_gia_han, phi_tre_ngay)
+INSERT INTO cau_hinh_thue_sach (sach_id, cho_thue, gia_thue_ngay, tien_coc, so_ngay_mac_dinh, so_lan_gia_han, phi_tre_ngay)
+SELECT id, TRUE,  5000, 30000, 14, 2, 3000 FROM sach WHERE ma_sach = 'S001'; -- Clean Code
+INSERT INTO cau_hinh_thue_sach (sach_id, cho_thue, gia_thue_ngay, tien_coc, so_ngay_mac_dinh, so_lan_gia_han, phi_tre_ngay)
+SELECT id, TRUE,  5000, 30000, 14, 2, 3000 FROM sach WHERE ma_sach = 'S002'; -- Effective Java
+INSERT INTO cau_hinh_thue_sach (sach_id, cho_thue, gia_thue_ngay, tien_coc, so_ngay_mac_dinh, so_lan_gia_han, phi_tre_ngay)
+SELECT id, TRUE,  3000, 20000, 14, 2, 2000 FROM sach WHERE ma_sach = 'S005'; -- The Little Prince
+INSERT INTO cau_hinh_thue_sach (sach_id, cho_thue, gia_thue_ngay, tien_coc, so_ngay_mac_dinh, so_lan_gia_han, phi_tre_ngay)
+SELECT id, TRUE,  3000, 20000, 14, 2, 2000 FROM sach WHERE ma_sach = 'S006'; -- 1984
+INSERT INTO cau_hinh_thue_sach (sach_id, cho_thue, gia_thue_ngay, tien_coc, so_ngay_mac_dinh, so_lan_gia_han, phi_tre_ngay)
+SELECT id, TRUE,  3500, 20000, 14, 2, 2000 FROM sach WHERE ma_sach = 'S007'; -- Norwegian Wood
+INSERT INTO cau_hinh_thue_sach (sach_id, cho_thue, gia_thue_ngay, tien_coc, so_ngay_mac_dinh, so_lan_gia_han, phi_tre_ngay)
+SELECT id, TRUE,  4000, 25000, 14, 2, 3000 FROM sach WHERE ma_sach = 'S009'; -- The Lean Startup
+INSERT INTO cau_hinh_thue_sach (sach_id, cho_thue, gia_thue_ngay, tien_coc, so_ngay_mac_dinh, so_lan_gia_han, phi_tre_ngay)
+SELECT id, TRUE,  4000, 25000, 14, 2, 3000 FROM sach WHERE ma_sach = 'S013'; -- Atomic Habits
+INSERT INTO cau_hinh_thue_sach (sach_id, cho_thue, gia_thue_ngay, tien_coc, so_ngay_mac_dinh, so_lan_gia_han, phi_tre_ngay)
+SELECT id, TRUE,  3500, 20000, 14, 2, 2000 FROM sach WHERE ma_sach = 'S017'; -- Harry Potter
+INSERT INTO cau_hinh_thue_sach (sach_id, cho_thue, gia_thue_ngay, tien_coc, so_ngay_mac_dinh, so_lan_gia_han, phi_tre_ngay)
+SELECT id, TRUE,  4000, 25000, 14, 2, 3000 FROM sach WHERE ma_sach = 'S025'; -- A Brief History of Time
+INSERT INTO cau_hinh_thue_sach (sach_id, cho_thue, gia_thue_ngay, tien_coc, so_ngay_mac_dinh, so_lan_gia_han, phi_tre_ngay)
+SELECT id, TRUE,  4000, 25000, 14, 2, 3000 FROM sach WHERE ma_sach = 'S029'; -- Sapiens
+
+-- Bản sao vật lý cho mỗi đầu sách (2-3 bản/cuốn)
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S001-01', id, 'MOI',     'SAN_SANG' FROM sach WHERE ma_sach='S001';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S001-02', id, 'NHU_MOI', 'SAN_SANG' FROM sach WHERE ma_sach='S001';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S002-01', id, 'MOI',     'SAN_SANG' FROM sach WHERE ma_sach='S002';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S002-02', id, 'TOT',     'SAN_SANG' FROM sach WHERE ma_sach='S002';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S005-01', id, 'MOI',     'SAN_SANG' FROM sach WHERE ma_sach='S005';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S005-02', id, 'NHU_MOI', 'SAN_SANG' FROM sach WHERE ma_sach='S005';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S005-03', id, 'TOT',     'SAN_SANG' FROM sach WHERE ma_sach='S005';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S006-01', id, 'MOI',     'SAN_SANG' FROM sach WHERE ma_sach='S006';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S006-02', id, 'TOT',     'SAN_SANG' FROM sach WHERE ma_sach='S006';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S007-01', id, 'MOI',     'SAN_SANG' FROM sach WHERE ma_sach='S007';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S007-02', id, 'NHU_MOI', 'SAN_SANG' FROM sach WHERE ma_sach='S007';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S009-01', id, 'MOI',     'SAN_SANG' FROM sach WHERE ma_sach='S009';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S009-02', id, 'TOT',     'SAN_SANG' FROM sach WHERE ma_sach='S009';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S013-01', id, 'MOI',     'SAN_SANG' FROM sach WHERE ma_sach='S013';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S013-02', id, 'NHU_MOI', 'SAN_SANG' FROM sach WHERE ma_sach='S013';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S013-03', id, 'MOI',     'SAN_SANG' FROM sach WHERE ma_sach='S013';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S017-01', id, 'MOI',     'SAN_SANG' FROM sach WHERE ma_sach='S017';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S017-02', id, 'NHU_MOI', 'SAN_SANG' FROM sach WHERE ma_sach='S017';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S017-03', id, 'TOT',     'SAN_SANG' FROM sach WHERE ma_sach='S017';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S025-01', id, 'MOI',     'SAN_SANG' FROM sach WHERE ma_sach='S025';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S025-02', id, 'TOT',     'SAN_SANG' FROM sach WHERE ma_sach='S025';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S029-01', id, 'MOI',     'SAN_SANG' FROM sach WHERE ma_sach='S029';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S029-02', id, 'NHU_MOI', 'SAN_SANG' FROM sach WHERE ma_sach='S029';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-S029-03', id, 'TOT',     'SAN_SANG' FROM sach WHERE ma_sach='S029';
+
+
+-- ==========================================
+-- DỮ LIỆU SÁCH CŨ (USED BOOKS)
+-- Tình trạng ngẫu nhiên đa dạng: NHU_MOI, TOT, KHA, CU
+-- ==========================================
+
+-- 1. Thêm các bản sao sách chuyển sang bán sách cũ
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S003', id, 'NHU_MOI', 'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S003';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S004', id, 'TOT',     'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S004';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S007', id, 'KHA',     'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S007';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S008', id, 'CU',      'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S008';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S010', id, 'TOT',     'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S010';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S011', id, 'KHA',     'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S011';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S012', id, 'NHU_MOI', 'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S012';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S014', id, 'TOT',     'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S014';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S015', id, 'CU',      'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S015';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S016', id, 'NHU_MOI', 'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S016';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S018', id, 'TOT',     'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S018';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S019', id, 'KHA',     'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S019';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S026', id, 'NHU_MOI', 'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S026';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S030', id, 'TOT',     'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S030';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S031', id, 'KHA',     'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S031';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S033', id, 'TOT',     'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S033';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S037', id, 'CU',      'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S037';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S039', id, 'NHU_MOI', 'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S039';
+
+-- 2 đầu sách cũ chờ duyệt
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S001', id, 'TOT',     'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S001';
+INSERT INTO ban_sao_sach (ma_ban_sao, sach_id, tinh_trang, trang_thai) SELECT 'BS-CU-S002', id, 'KHA',     'CHO_BAN_CU' FROM sach WHERE ma_sach = 'S002';
+
+-- 2. Thêm vào bảng sach_cu (18 cuốn đang mở bán + 2 cuốn chờ duyệt)
+-- S003 - The Pragmatic Programmer
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 293000, 270000, 'NHU_MOI', 'Bản sao lưu hành nội bộ, giấy đẹp nguyên vẹn, không nếp gấp hay quăn góc.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S003';
+
+-- S004 - Designing Data-Intensive Applications
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 290000, 280000, 'TOT', 'Bìa còn bóng, gáy sách chắc chắn, ruột sách sạch đẹp không ghi chú.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S004';
+
+-- S007 - Norwegian Wood
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 88000, 95000, 'KHA', 'Giấy ngả màu thời gian nhẹ theo phong cách hoài niệm, chữ in sắc nét rõ ràng.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S007';
+
+-- S008 - To Kill a Mockingbird
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 47000, 60000, 'CU', 'Bìa sờn nhẹ ở góc, trang ruột đầy đủ không rách, giá rất tốt để đọc lại.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S008';
+
+-- S010 - Zero to One
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 126000, 125000, 'TOT', 'Sách được bảo quản tốt trong tủ kính, mép giấy thẳng, chỉ đọc qua 1 lần.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S010';
+
+-- S011 - Thinking, Fast and Slow
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 112000, 120000, 'KHA', 'Có vài vết đánh dấu bút chì ở phần mở đầu, các chương sau sạch đẹp.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S011';
+
+-- S012 - Good to Great
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 181000, 175000, 'NHU_MOI', 'Hình thức như mới 98%, gáy sách nguyên vẹn không cấn móp, mép giấy phẳng.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S012';
+
+-- S014 - Deep Work
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 126000, 129000, 'TOT', 'Bìa đẹp, không quăn góc, chữ in rõ nét, giấy thơm không ẩm mốc.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S014';
+
+-- S015 - How to Win Friends and Influence People
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 50000, 65000, 'CU', 'Ấn bản sưu tầm, giấy ngả vàng tự nhiên, gáy chắc chắn không rách trang.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S015';
+
+-- S016 - The 7 Habits of Highly Effective People
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 195000, 190000, 'NHU_MOI', 'Tình trạng xuất sắc như mới, mép giấy thẳng tinh tươm, chưa từng viết vẽ.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S016';
+
+-- S018 - Matilda
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 93000, 90000, 'TOT', 'Truyện bìa mềm đẹp, tranh minh họa sắc nét, các trang ruột sạch sẽ.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S018';
+
+-- S019 - Charlotte's Web
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 60000, 65000, 'KHA', 'Gáy sách hơi mềm nhẹ do đã qua sử dụng, tranh minh họa cổ điển đầy đủ.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S019';
+
+-- S026 - Cosmos
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 174000, 165000, 'NHU_MOI', 'Bản in đẹp, chất lượng giấy cao cấp, gáy vuông vức gần như nguyên bản.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S026';
+
+-- S030 - Guns, Germs, and Steel
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 164000, 160000, 'TOT', 'Bìa nguyên vẹn, các bảng biểu và phụ lục địa lý rõ ràng, sạch đẹp.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S030';
+
+-- S031 - The Silk Roads
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 108000, 115000, 'KHA', 'Có nếp gấp nhẹ ở góc bìa sau, bên trong hoàn hảo không vết bẩn.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S031';
+
+-- S033 - Introduction to Algorithms
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 439000, 450000, 'TOT', 'Giáo trình chuẩn, gáy sách được giữ gìn rất tốt, tiết kiệm so với mua mới.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S033';
+
+-- S037 - Why We Sleep
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 60000, 75000, 'CU', 'Dấu ấn thời gian nhẹ ở mép sách, các trang chữ đọc rõ ràng không rách.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S037';
+
+-- S039 - Outlive
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai, duyet_boi, ngay_duyet)
+SELECT b.id, 223000, 215000, 'NHU_MOI', 'Ấn bản gần đây, còn nguyên vẹn mùi sách mới, không một vết tì.', 'DANG_BAN', NULL, CURRENT_TIMESTAMP
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S039';
+
+-- 2 cuốn chờ duyệt giá trong trang quản trị:
+-- S001 - Clean Code
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai)
+SELECT b.id, 181000, NULL, 'TOT', 'Bản sao hoàn trả sau thuê, hình thức tốt, chờ quản trị viên duyệt giá mở bán.', 'CHO_DUYET'
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S001';
+
+-- S002 - Effective Java
+INSERT INTO sach_cu (ban_sao_id, gia_de_xuat, gia_ban, tinh_trang, mo_ta, trang_thai)
+SELECT b.id, 156000, NULL, 'KHA', 'Bản sao hoàn trả kỳ trước, ruột sạch, chờ quản trị viên phê duyệt mở bán.', 'CHO_DUYET'
+FROM ban_sao_sach b WHERE b.ma_ban_sao = 'BS-CU-S002';
