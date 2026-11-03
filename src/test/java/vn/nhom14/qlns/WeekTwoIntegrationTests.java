@@ -132,6 +132,15 @@ class WeekTwoIntegrationTests {
                 "{\"tenNhaXuatBan\":\"NXB\",\"email\":\"sai-email\",\"trangThai\":true}").statusCode());
     }
 
+    @Test void rentalSchemaVersionTwoIsAvailable() {
+        assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM schema_migration WHERE version=2", Integer.class));
+        for (String table : new String[]{"hoi_vien", "the_thanh_vien", "giao_the", "thanh_toan",
+                "cau_hinh_thue_sach", "ban_sao_sach", "phieu_thue", "chi_tiet_phieu_thue",
+                "nhat_ky_thue", "sach_cu", "chi_tiet_don_hang_sach_cu"}) {
+            assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM " + table, Integer.class), table);
+        }
+    }
+
     @Test void foreignKeysProtectCategoriesPublishersBooksAndCustomers() throws Exception {
         assertEquals(409, send("DELETE", "/api/danh-muc/1", null).statusCode());
         assertEquals(409, send("DELETE", "/api/nha-xuat-ban/1", null).statusCode());

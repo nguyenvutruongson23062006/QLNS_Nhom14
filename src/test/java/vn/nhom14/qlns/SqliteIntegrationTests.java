@@ -24,6 +24,7 @@ class SqliteIntegrationTests extends WeekTwoIntegrationTests {
   assertNotNull(jdbc.queryForObject("SELECT sqlite_version()",String.class));
   assertEquals(1,jdbc.queryForObject("PRAGMA foreign_keys",Integer.class));
   assertEquals(40,jdbc.queryForObject("SELECT COUNT(*) FROM sach",Integer.class));
+  assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM schema_migration WHERE version=2",Integer.class));
  }
  @Test void sqliteCheckoutIsIdempotentAndCancellationRestoresStock(){
   var auth=new UsernamePasswordAuthenticationToken("bandoc","",List.of(new SimpleGrantedAuthority("ROLE_KHACH_HANG")));

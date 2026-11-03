@@ -125,12 +125,13 @@ function bookArt(b,publisherName='',large=false,detail=false){
  const publisher=publisherName||'Nhà xuất bản đang cập nhật';
  return `<div class="book-art ${tone} ${large?'large':''} ${detail?'detail-art':''}" role="img" aria-label="Bìa minh họa ${esc(b.tenSach)} · ${esc(publisher)}"><small>TỦ SÁCH NHÓM 14</small><strong>${esc(b.tenSach)}</strong><span class="book-mark">✦</span><em>${esc(publisher)}</em></div>`;
 }
-function card(b,publisherName){return `<article class="shop-card"><a class="cover-link" href="/chi-tiet.html?id=${b.id}">${bookArt(b,publisherName)}</a><div class="book-meta"><small>${esc(b.maSach)} · ${b.soLuongTon>0?'Có sẵn':'Tạm hết hàng'}</small><h3><a href="/chi-tiet.html?id=${b.id}">${esc(b.tenSach)}</a></h3><p>${esc(b.tacGia)}</p><div class="book-bottom"><strong>${money(b.giaBan)}</strong>${favoriteButton(b.id)}<button data-cart-add="${b.id}" ${b.soLuongTon<1?'disabled':''} aria-label="Thêm ${esc(b.tenSach)} vào giỏ">＋ Giỏ</button><a href="/chi-tiet.html?id=${b.id}" aria-label="Xem ${esc(b.tenSach)}">↗</a></div></div></article>`;}
+function card(b,publisherName,rental){return `<article class="shop-card"><a class="cover-link" href="/chi-tiet.html?id=${b.id}">${bookArt(b,publisherName)}</a><div class="book-meta"><small>${esc(b.maSach)} · ${b.soLuongTon>0?'Có sẵn':'Tạm hết hàng'}</small><h3><a href="/chi-tiet.html?id=${b.id}">${esc(b.tenSach)}</a></h3><p>${esc(b.tacGia)}</p><div class="book-bottom"><strong>${money(b.giaBan)}</strong>${favoriteButton(b.id)}<button data-cart-add="${b.id}" ${b.soLuongTon<1?'disabled':''} aria-label="Thêm ${esc(b.tenSach)} vào giỏ">＋ Giỏ</button>${rental?`<a class="rent-link" href="/thue-sach.html?book=${b.id}" aria-label="Thuê ${esc(b.tenSach)}">Thuê</a>`:''}<a href="/chi-tiet.html?id=${b.id}" aria-label="Xem ${esc(b.tenSach)}">↗</a></div></div></article>`;}
 async function catalog(home=false){
  document.body.classList.add('storefront');
  app.innerHTML='<p role="status">Đang sắp xếp tủ sách…</p>';
  try{
- const [books,categories,publishers]=await Promise.all([allPages('sach'),allPages('danh-muc'),allPages('nha-xuat-ban')]);
+ const [books,categories,publishers,rentals]=await Promise.all([allPages('sach'),allPages('danh-muc'),allPages('nha-xuat-ban'),api('rental-catalog').catch(()=>[])]);
+ const rentalBooks=new Map(rentals.filter(r=>r.choThue).map(r=>[r.sachId,r]));
  const publisherNames=new Map(publishers.map(p=>[p.id,p.tenNhaXuatBan]));
  let selected=Number(new URLSearchParams(location.search).get('category'))||0, query=new URLSearchParams(location.search).get('q')||'',page=0;
  const available=books.filter(b=>b.trangThai);
@@ -141,7 +142,7 @@ async function catalog(home=false){
  function load(){let rows=available.filter(b=>(!selected||b.danhMucId===selected)&&normalize(b.tenSach+' '+b.tacGia).includes(normalize(query)));
  const sort=document.querySelector('#sort-books').value;if(sort==='price-asc')rows.sort((a,b)=>a.giaBan-b.giaBan);if(sort==='price-desc')rows.sort((a,b)=>b.giaBan-a.giaBan);if(sort==='title')rows.sort((a,b)=>a.tenSach.localeCompare(b.tenSach,'vi'));
  const pages=Math.ceil(rows.length/8);page=Math.max(0,Math.min(page,pages-1));
- document.querySelector('#books').innerHTML=rows.slice(page*8,page*8+8).map(b=>card(b,publisherNames.get(b.nhaXuatBanId))).join('')||'<div class="empty-shelf"><h3>Chưa tìm thấy cuốn sách phù hợp</h3><p>Thử một tên sách, tác giả hoặc thể loại khác nhé.</p></div>';
+ document.querySelector('#books').innerHTML=rows.slice(page*8,page*8+8).map(b=>card(b,publisherNames.get(b.nhaXuatBanId),rentalBooks.get(b.id))).join('')||'<div class="empty-shelf"><h3>Chưa tìm thấy cuốn sách phù hợp</h3><p>Thử một tên sách, tác giả hoặc thể loại khác nhé.</p></div>';
  document.querySelector('#shelf-title').textContent=selected?(categories.find(c=>c.id===selected)?.tenDanhMuc||'Khám phá trên kệ'):'Khám phá trên kệ';
  document.querySelector('#result-summary').textContent=`${rows.length} cuốn sách${query?' cho “'+query+'”':''}`;
  document.querySelector('#page').textContent=`${pages?page+1:0} / ${pages}`;document.querySelector('#prev').disabled=page===0;document.querySelector('#next').disabled=page+1>=pages;
@@ -156,8 +157,8 @@ async function catalog(home=false){
 async function detail(){
  app.innerHTML='<p>Đang tải sách…</p>';
  try{const id=new URLSearchParams(location.search).get('id');if(!/^\d+$/.test(id||''))throw Error('Mã sách không hợp lệ');
- const b=await api('sach/'+id), c=await api('danh-muc/'+b.danhMucId),n=await api('nha-xuat-ban/'+b.nhaXuatBanId);
- app.innerHTML=`<a href="/sach.html">← Quay lại tủ sách</a><section class="detail panel">${bookArt(b,n.tenNhaXuatBan,false,true)}<div><span class="eyebrow">${esc(c.tenDanhMuc)}</span><h1>${esc(b.tenSach)}</h1><p>Tác giả: <strong>${esc(b.tacGia)}</strong></p><p>Nhà xuất bản: ${esc(n.tenNhaXuatBan)}</p><p>Năm xuất bản: ${esc(b.namXuatBan||'Đang cập nhật')}</p><p>ISBN: ${esc(b.isbn||'Đang cập nhật')}</p><div class="price">${money(b.giaBan)}</div><p>${b.soLuongTon>0?'Còn '+b.soLuongTon+' cuốn':'Tạm hết hàng'}</p>${favoriteButton(b.id)} <button data-cart-add="${b.id}" ${b.soLuongTon<1?'disabled':''}>Thêm vào giỏ</button></div></section><section class="panel"><h2>Giới thiệu sản phẩm</h2><p>${esc(b.moTa||'Một đầu sách thuộc thể loại '+c.tenDanhMuc+'.')}</p></section><section class="panel" id="publication"><h2>Thông tin xuất bản</h2><dl><dt>Mã sách</dt><dd>${esc(b.maSach)}</dd><dt>ISBN</dt><dd>${esc(b.isbn||'Đang cập nhật')}</dd><dt>Nhà xuất bản</dt><dd>${esc(n.tenNhaXuatBan)}</dd><dt>Năm xuất bản</dt><dd>${esc(b.namXuatBan||'Đang cập nhật')}</dd><dt>Danh mục</dt><dd>${esc(c.tenDanhMuc)}</dd></dl></section>`;
+ const b=await api('sach/'+id), c=await api('danh-muc/'+b.danhMucId),n=await api('nha-xuat-ban/'+b.nhaXuatBanId),rental=(await api('rental-catalog').catch(()=>[])).find(r=>r.sachId===b.id&&r.choThue);
+ app.innerHTML=`<a href="/sach.html">← Quay lại tủ sách</a><section class="detail panel">${bookArt(b,n.tenNhaXuatBan,false,true)}<div><span class="eyebrow">${esc(c.tenDanhMuc)}</span><h1>${esc(b.tenSach)}</h1><p>Tác giả: <strong>${esc(b.tacGia)}</strong></p><p>Nhà xuất bản: ${esc(n.tenNhaXuatBan)}</p><p>Năm xuất bản: ${esc(b.namXuatBan||'Đang cập nhật')}</p><p>ISBN: ${esc(b.isbn||'Đang cập nhật')}</p><div class="price">${money(b.giaBan)}</div><p>${b.soLuongTon>0?'Còn '+b.soLuongTon+' cuốn':'Tạm hết hàng'}</p>${favoriteButton(b.id)} <button data-cart-add="${b.id}" ${b.soLuongTon<1?'disabled':''}>Mua sách</button>${rental?` <a class="button secondary" href="/thue-sach.html?book=${b.id}">Thuê sách · ${money(rental.giaThueNgay)}/ngày</a>`:''}</div></section><section class="panel"><h2>Giới thiệu sản phẩm</h2><p>${esc(b.moTa||'Một đầu sách thuộc thể loại '+c.tenDanhMuc+'.')}</p></section><section class="panel" id="publication"><h2>Thông tin xuất bản</h2><dl><dt>Mã sách</dt><dd>${esc(b.maSach)}</dd><dt>ISBN</dt><dd>${esc(b.isbn||'Đang cập nhật')}</dd><dt>Nhà xuất bản</dt><dd>${esc(n.tenNhaXuatBan)}</dd><dt>Năm xuất bản</dt><dd>${esc(b.namXuatBan||'Đang cập nhật')}</dd><dt>Danh mục</dt><dd>${esc(c.tenDanhMuc)}</dd></dl></section>`;
  }catch(e){app.innerHTML=`<p role="alert">${esc(e.message)}</p><a href="/sach.html">Về tủ sách</a>`;}
 }
 function login(admin=false,register=false){
@@ -288,20 +289,22 @@ async function start(){
  if(currentUser.role==='KHACH_HANG'){try{favoriteIds=new Set(await api('yeu-thich/ids'));}catch(e){favoriteIds=new Set();}}
  const customerNav=currentUser.role==='KHACH_HANG'?`<a href="/yeu-thich.html">♡ Yêu thích</a><a href="/gio-hang.html">Giỏ hàng (<span data-cart-count>0</span>)</a><a href="/don-hang.html">Đơn hàng</a><a href="/ca-nhan.html">${esc(currentUser.username)} · Cá nhân</a>`:'';
  const staffNav=isStaffRole(currentUser.role)?`<a href="/quan-tri.html">Quản trị</a><span>${esc(currentUser.username)} · ${currentUser.role==='ADMIN'?'Admin':'Nhân viên'}</span>`:'';
- document.querySelector('nav').innerHTML=`<a href="/">Trang chủ</a><a href="/sach.html">Tủ sách</a>${customerNav}${staffNav}${currentUser.role==='GUEST'?'<a href="/dang-nhap.html">Đăng nhập</a>':'<button id="logout" class="secondary">Đăng xuất</button>'}`;updateCartCount();
+ document.querySelector('nav').innerHTML=`<a href="/">Trang chủ</a><a href="/sach.html">Tủ sách</a><a href="/thue-sach.html">Thuê sách</a><a href="/sach-cu.html">Sách cũ</a>${customerNav}${staffNav}${currentUser.role==='GUEST'?'<a href="/dang-nhap.html">Đăng nhập</a>':'<button id="logout" class="secondary">Đăng xuất</button>'}`;updateCartCount();
  document.querySelector('#logout')?.addEventListener('click',async()=>{await api('auth/logout',{method:'POST'});location.href='/';});
  if(path==='/dang-nhap.html'||path==='/admin-login.html'||path==='/dang-ky.html')return login(path==='/admin-login.html',path==='/dang-ky.html');
  if(path==='/ca-nhan.html')return profilePage();
  if(path==='/yeu-thich.html')return favoritesPage();
  if(path==='/gio-hang.html')return cartPage();
  if(path==='/don-hang.html')return ordersPage(false);
+ if(path==='/thue-sach.html')return rentalPage();
+ if(path==='/sach-cu.html')return usedBookPage();
  if(path==='/chi-tiet.html')return detail();
  if(path==='/quan-tri.html'||path==='/khach-hang.html'){
  if(!isStaffRole(currentUser.role)){location.href='/admin-login.html';return;}
  document.body.classList.add('admin-layout');
- const aside=document.createElement('aside');aside.className='admin-sidebar';aside.innerHTML=`<h2>NHÀ SÁCH ${currentUser.role==='ADMIN'?'ADMIN':'NHÂN VIÊN'}</h2><p>Không gian vận hành</p><a href="/quan-tri.html?module=sach">▤ Sách</a><a href="/quan-tri.html?module=danh-muc">☷ Danh mục</a><a href="/quan-tri.html?module=nha-xuat-ban">▣ Nhà xuất bản</a><a href="/quan-tri.html?module=khach-hang">♙ Khách hàng</a><a href="/quan-tri.html?module=orders">▦ Đơn hàng</a>${currentUser.role==='ADMIN'?'<a href="/quan-tri.html?module=staff">♟ Nhân viên</a>':''}<a href="/">← Xem website</a>`;document.body.prepend(aside);
+ const aside=document.createElement('aside');aside.className='admin-sidebar';aside.innerHTML=`<h2>NHÀ SÁCH ${currentUser.role==='ADMIN'?'ADMIN':'NHÂN VIÊN'}</h2><p>Không gian vận hành</p><a href="/quan-tri.html?module=sach">▤ Sách</a><a href="/quan-tri.html?module=danh-muc">☷ Danh mục</a><a href="/quan-tri.html?module=nha-xuat-ban">▣ Nhà xuất bản</a><a href="/quan-tri.html?module=khach-hang">♙ Khách hàng</a><a href="/quan-tri.html?module=orders">▦ Đơn hàng</a><a href="/quan-tri.html?module=rental">↻ Thuê & trả</a><a href="/quan-tri.html?module=memberships">◇ Hội viên</a><a href="/quan-tri.html?module=payments">₫ Đối soát</a><a href="/quan-tri.html?module=used-books">♲ Sách cũ</a>${currentUser.role==='ADMIN'?'<a href="/quan-tri.html?module=staff">♟ Nhân viên</a>':''}<a href="/">← Xem website</a>`;document.body.prepend(aside);
  const module=path==='/khach-hang.html'?'khach-hang':new URLSearchParams(location.search).get('module')||'sach';
- if(module==='orders')return ordersPage(true);if(module==='staff')return staffAccountsPage();return manager(Object.hasOwn(schemas,module)?module:'sach',true);}
+ if(module==='orders')return ordersPage(true);if(module==='staff')return staffAccountsPage();if(module==='rental')return adminRentalPage();if(module==='memberships')return adminMembershipPage();if(module==='payments')return adminPaymentPage();if(module==='used-books')return adminUsedBooksPage();return manager(Object.hasOwn(schemas,module)?module:'sach',true);}
  return catalog(path==='/'||path==='/index.html');
 }
 start();
