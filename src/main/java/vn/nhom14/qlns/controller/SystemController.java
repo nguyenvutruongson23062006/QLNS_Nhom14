@@ -24,7 +24,7 @@ public class SystemController {
         jdbc.queryForObject("SELECT 1", Integer.class);
         String[] profiles = environment.getActiveProfiles();
         if (profiles.length == 0) profiles = environment.getDefaultProfiles();
-        return new SystemStatus("QLNS Nhóm 14", "UP", "CONNECTED", 4, List.of(profiles));
+        return new SystemStatus("Nhà Sách Tri Thức", "UP", "CONNECTED", 4, List.of(profiles));
     }
 
     public record SystemStatus(String application, String status, String database,
