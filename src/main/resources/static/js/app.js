@@ -3,13 +3,44 @@ const app = document.querySelector('#app');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money = value => new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(value);
 const isStaffRole = role => role==='ADMIN'||role==='NHAN_VIEN';
+function formatFriendlyValidation(data, status) {
+  const fieldGuides = {
+    soDienThoai: 'Số điện thoại chưa đúng định dạng (8-20 ký tự số), vui lòng kiểm tra và nhập lại.',
+    soDienThoaiNhan: 'Số điện thoại người nhận chưa đúng định dạng (8-20 ký tự số), vui lòng kiểm tra và nhập lại.',
+    hoTen: 'Vui lòng kiểm tra và nhập lại họ và tên theo yêu cầu.',
+    tenNguoiNhan: 'Vui lòng kiểm tra và nhập lại họ tên người nhận theo yêu cầu.',
+    email: 'Địa chỉ email chưa đúng định dạng, vui lòng kiểm tra và nhập lại.',
+    diaChi: 'Vui lòng kiểm tra và nhập lại địa chỉ.',
+    diaChiGiao: 'Vui lòng kiểm tra và nhập lại địa chỉ nhận hàng.',
+    diaChiGiaoHang: 'Vui lòng kiểm tra và nhập lại địa chỉ nhận hàng.',
+    matKhau: 'Vui lòng nhập lại mật khẩu từ 8 đến 72 ký tự theo yêu cầu.',
+    password: 'Vui lòng nhập lại mật khẩu từ 8 đến 72 ký tự theo yêu cầu.',
+    tenDangNhap: 'Vui lòng kiểm tra lại tên đăng nhập (4-50 ký tự gồm chữ, số hoặc gạch dưới).',
+    username: 'Vui lòng kiểm tra lại tên đăng nhập (4-50 ký tự gồm chữ, số hoặc gạch dưới).'
+  };
+  if (data && data.errors && Object.keys(data.errors).length > 0) {
+    const list = Object.entries(data.errors).map(([field, msg]) => {
+      if (fieldGuides[field]) return fieldGuides[field];
+      if (msg && !msg.toLowerCase().includes('must') && !msg.toLowerCase().includes('size')) return msg;
+      return 'Vui lòng kiểm tra và nhập lại mục ' + field + '.';
+    });
+    return 'Thông báo: ' + list.join(' · ');
+  }
+  if (data && data.message) {
+    let msg = data.message;
+    if (msg === 'Dữ liệu không hợp lệ') msg = 'Vui lòng kiểm tra và nhập lại các thông tin theo đúng yêu cầu.';
+    return 'Thông báo: ' + msg;
+  }
+  return 'Thông báo: Vui lòng kiểm tra và nhập lại theo yêu cầu.';
+}
+
 async function api(path, options = {}) {
   const csrf = options.method && options.method !== 'GET' ? await fetch('/api/auth/csrf').then(r=>r.json()) : null;
   if(csrf) options.headers={...options.headers,[csrf.headerName]:csrf.token};
   const response = await fetch('/api/' + path, { ...options, headers: {'Content-Type':'application/json', ...options.headers} });
   if (response.status === 204) return null;
   const data = await response.json().catch(()=>({}));
-  if (!response.ok) throw Object.assign(new Error([data.message, ...Object.entries(data.errors || {}).map(([k,v]) => `${k}: ${v}`)].filter(Boolean).join(' · ') || `Lỗi HTTP ${response.status}`), {status:response.status});
+  if (!response.ok) throw Object.assign(new Error(formatFriendlyValidation(data, response.status)), {status:response.status, data});
   return data;
 }
 const schemas = {
@@ -18,7 +49,30 @@ const schemas = {
  'nha-xuat-ban': {title:'Quản lý nhà xuất bản',single:'nhà xuất bản',columns:['tenNhaXuatBan','soDienThoai','email','trangThai'],fields:[['tenNhaXuatBan','Tên nhà xuất bản','text',true,150],['diaChi','Địa chỉ','text',false,500],['soDienThoai','Số điện thoại','tel',false,20],['email','Email','email',false,150],['trangThai','Trạng thái','boolean',true]]},
  'khach-hang': {title:'Quản lý khách hàng',single:'khách hàng',columns:['hoTen','soDienThoai','email','diaChi'],fields:[['hoTen','Họ tên','text',true,150],['soDienThoai','Số điện thoại','tel',false,20],['email','Email','email',false,150],['diaChi','Địa chỉ','text',false,500]]}
 };
-function message(text, error=false, target=document.querySelector('#message')) { if(target) {target.textContent=text;target.className='notice'+(error?' error':'');target.hidden=!text;} }
+function showToastPopup(text, isWarning = false) {
+  if (!text) return;
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = 'toast-popup ' + (isWarning ? 'toast-warning' : 'toast-success');
+  toast.innerHTML = '<span>' + esc(text) + '</span><button type="button" class="toast-close" title="Đóng">✕</button>';
+  let closed = false;
+  const close = () => {
+    if (closed) return;
+    closed = true;
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-10px)';
+    setTimeout(() => toast.remove(), 200);
+  };
+  toast.onclick = close;
+  container.appendChild(toast);
+  setTimeout(close, 5500);
+}
+function message(text, error=false, target=document.querySelector('#message')) { if(target) {target.textContent=text;target.className='notice'+(error?' warning-notice':'');target.hidden=!text;} if(text) showToastPopup(text, error); }
 async function allPages(resource) {
  const first = await api(`${resource}?page=0&size=100`);
  const rows = [...first.content];
@@ -244,7 +298,7 @@ async function cartPage(){
   const render=()=>{
    const cart=readCart(),lines=Object.entries(cart).map(([id,quantity])=>({book:byId.get(id),quantity:Number(quantity)})).filter(x=>x.book&&x.quantity>0);
    const total=lines.reduce((sum,line)=>sum+line.book.giaBan*line.quantity,0);
-   app.innerHTML=`<h1>Giỏ hàng</h1><div id="message" role="alert" hidden></div>${lines.length?`<div class="table-wrap"><table><thead><tr><th>Sách</th><th>Giá</th><th>Số lượng</th><th>Thành tiền</th><th></th></tr></thead><tbody>${lines.map(line=>`<tr><td>${esc(line.book.tenSach)}</td><td>${money(line.book.giaBan)}</td><td><input class="cart-qty" data-cart-id="${line.book.id}" type="number" min="1" max="${Math.min(99,line.book.soLuongTon)}" value="${line.quantity}"></td><td>${money(line.book.giaBan*line.quantity)}</td><td><button class="danger" data-cart-remove="${line.book.id}">Xóa</button></td></tr>`).join('')}</tbody></table></div><section class="panel checkout"><h2>Thông tin nhận hàng</h2><p class="price">Tổng cộng: ${money(total)}</p><form id="checkout-form"><label>Người nhận<input name="tenNguoiNhan" required maxlength="150" value="${esc(profile.hoTen)}"></label><label>Số điện thoại<input name="soDienThoaiNhan" required maxlength="20" pattern="\\+?[0-9][0-9 .-]{6,18}[0-9]" value="${esc(profile.soDienThoai)}"></label><label>Địa chỉ giao<input name="diaChiGiao" required maxlength="500" value="${esc(profile.diaChi)}"></label><label>Ghi chú<textarea name="ghiChu" maxlength="1000"></textarea></label><button id="checkout-submit">Đặt hàng COD</button></form></section>`:'<section class="empty-shelf"><h2>Giỏ hàng đang trống</h2><a class="button" href="/sach.html">Chọn sách →</a></section>'}`;
+   app.innerHTML=`<h1>Giỏ hàng</h1><div id="message" role="alert" hidden></div>${lines.length?`<div class="table-wrap"><table><thead><tr><th>Sách</th><th>Giá</th><th>Số lượng</th><th>Thành tiền</th><th></th></tr></thead><tbody>${lines.map(line=>`<tr><td>${esc(line.book.tenSach)}</td><td>${money(line.book.giaBan)}</td><td><input class="cart-qty" data-cart-id="${line.book.id}" type="number" min="1" max="${Math.min(99,line.book.soLuongTon)}" value="${line.quantity}"></td><td>${money(line.book.giaBan*line.quantity)}</td><td><button class="danger" data-cart-remove="${line.book.id}">Xóa</button></td></tr>`).join('')}</tbody></table></div><section class="panel checkout"><h2>Thông tin nhận hàng</h2><p class="price">Tổng cộng: ${money(total)}</p><form id="checkout-form"><label>Người nhận<input name="tenNguoiNhan" required maxlength="150" value="${esc(profile.hoTen)}"></label><label>Số điện thoại<input name="soDienThoaiNhan" required maxlength="20" pattern="\\+?[0-9][0-9 .-]{6,18}[0-9]" value="${esc(profile.soDienThoai)}"></label><label>Địa chỉ giao<input name="diaChiGiao" required maxlength="500" value="${esc(profile.diaChi)}"></label><label>Ghi chú<textarea name="ghiChu" maxlength="1000"></textarea></label><button id="checkout-submit">Đặt hàng và nhận mã QR</button></form></section>`:'<section class="empty-shelf"><h2>Giỏ hàng đang trống</h2><a class="button" href="/sach.html">Chọn sách →</a></section>'}`;
    document.querySelectorAll('[data-cart-remove]').forEach(button=>button.onclick=()=>{const value=readCart();delete value[button.dataset.cartRemove];writeCart(value);render();});
    document.querySelectorAll('[data-cart-id]').forEach(input=>input.onchange=()=>{const value=readCart(),max=Number(input.max),quantity=Math.max(1,Math.min(max,Number(input.value)||1));value[input.dataset.cartId]=quantity;writeCart(value);render();});
    document.querySelector('#checkout-form')?.addEventListener('submit',async event=>{
@@ -262,6 +316,12 @@ async function cartPage(){
 
 const orderLabels={CHO_XAC_NHAN:'Chờ xác nhận',DA_XAC_NHAN:'Đã xác nhận',DANG_GIAO:'Đang giao',HOAN_THANH:'Hoàn thành',DA_HUY:'Đã hủy'};
 const orderActionLabels={DA_XAC_NHAN:'Xác nhận đơn',DANG_GIAO:'Bắt đầu giao',HOAN_THANH:'Hoàn thành đơn',DA_HUY:'Hủy đơn'};
+function orderPayment(payment){
+ if(!payment)return '';
+ const pending=['CHO_THANH_TOAN','CHO_DOI_SOAT'].includes(payment.trangThai),showQr=pending&&payment.qrConfigured&&payment.qrImageUrl;
+ const note=showQr?'Quét mã để chuyển đúng số tiền và nội dung. Đơn chỉ được ghi nhận đã thanh toán sau khi nhân viên đối soát.':(payment.qrNote||'Khoản thanh toán đã được cập nhật.');
+ return `<section class="payment-box"><div><span class="eyebrow">THANH TOÁN ${esc(payment.maThanhToan)}</span><h3>${money(payment.soTien)}</h3><p>Nội dung chuyển khoản: <strong>${esc(payment.noiDungChuyenKhoan)}</strong></p><span class="status-badge">${esc(payment.trangThai)}</span></div>${showQr?`<img src="${esc(payment.qrImageUrl)}" alt="Mã VietQR cho đơn hàng">`:''}<p class="payment-note">${esc(note)}</p></section>`;
+}
 function pager(data,page){return `<div class="pager"><button id="prev" class="secondary" ${page===0?'disabled':''}>← Trước</button><span>Trang ${data.totalPages?page+1:0}/${data.totalPages} · ${data.totalElements} bản ghi</span><button id="next" class="secondary" ${page+1>=data.totalPages?'disabled':''}>Sau →</button></div>`;}
 function bindPager(data,page,go){document.querySelector('#prev').onclick=()=>go(page-1);document.querySelector('#next').onclick=()=>go(page+1);}
 async function ordersPage(admin=false,page=0){
@@ -269,7 +329,7 @@ async function ordersPage(admin=false,page=0){
  try{
   const data=await api(`orders?page=${page}&size=12`);
   if(page>0&&!data.content.length)return ordersPage(admin,page-1);
-  app.innerHTML=`<span class="eyebrow">${admin?'VẬN HÀNH':'TÀI KHOẢN CỦA BẠN'}</span><h1>${admin?'Quản lý đơn hàng':'Đơn hàng của tôi'}</h1><div id="message" role="alert" hidden></div><div class="order-list">${data.content.map(order=>`<article class="panel order-card"><div class="section-heading"><div><strong>${esc(order.maDonHang)}</strong><small>${new Date(order.ngayDat).toLocaleString('vi-VN')}</small></div><span class="status-badge">${orderLabels[order.trangThai]||esc(order.trangThai)}</span></div><p>${esc(order.tenNguoiNhan)} · ${esc(order.soDienThoaiNhan)} · ${esc(order.diaChiGiao)}</p><ul>${order.items.map(item=>`<li>${esc(item.tenSach)} × ${item.soLuong} — ${money(item.thanhTien)}</li>`).join('')}</ul><strong>${money(order.tongTien)}</strong><div class="actions">${orderActions(order,admin)}</div></article>`).join('')||'<section class="empty-shelf"><h2>Chưa có đơn hàng</h2></section>'}</div>${pager(data,page)}`;
+   app.innerHTML=`<span class="eyebrow">${admin?'VẬN HÀNH':'TÀI KHOẢN CỦA BẠN'}</span><h1>${admin?'Quản lý đơn hàng':'Đơn hàng của tôi'}</h1><div id="message" role="alert" hidden></div><div class="order-list">${data.content.map(order=>`<article class="panel order-card"><div class="section-heading"><div><strong>${esc(order.maDonHang)}</strong><small>${new Date(order.ngayDat).toLocaleString('vi-VN')}</small></div><span class="status-badge">${orderLabels[order.trangThai]||esc(order.trangThai)}</span></div><p>${esc(order.tenNguoiNhan)} · ${esc(order.soDienThoaiNhan)} · ${esc(order.diaChiGiao)}</p><ul>${order.items.map(item=>`<li>${esc(item.tenSach)} × ${item.soLuong} — ${money(item.thanhTien)}</li>`).join('')}</ul><strong>${money(order.tongTien)}</strong>${orderPayment(order.payment)}<div class="actions">${orderActions(order,admin)}</div></article>`).join('')||'<section class="empty-shelf"><h2>Chưa có đơn hàng</h2></section>'}</div>${pager(data,page)}`;
   bindPager(data,page,next=>ordersPage(admin,next));
   document.querySelectorAll('[data-order-status]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{await api(`orders/${button.dataset.orderId}/status`,{method:'PATCH',body:JSON.stringify({trangThai:button.dataset.orderStatus})});await ordersPage(admin,page);}catch(err){message(err.message,true);button.disabled=false;}});
  }catch(err){app.innerHTML=`<section class="panel"><h1>Không tải được đơn hàng</h1><p role="alert">${esc(err.message)}</p></section>`;}
