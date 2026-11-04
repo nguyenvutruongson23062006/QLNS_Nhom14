@@ -31,9 +31,9 @@ public class PaymentService {
     private final String accountName;
 
     public PaymentService(JdbcTemplate jdbc, CurrentActorService actors,
-            @Value("${QLNS_VIETQR_BANK_BIN:}") String bankBin,
-            @Value("${QLNS_VIETQR_ACCOUNT_NUMBER:}") String accountNumber,
-            @Value("${QLNS_VIETQR_ACCOUNT_NAME:}") String accountName) {
+            @Value("${QLNS_VIETQR_BANK_BIN:970422}") String bankBin,
+            @Value("${QLNS_VIETQR_ACCOUNT_NUMBER:0387196095}") String accountNumber,
+            @Value("${QLNS_VIETQR_ACCOUNT_NAME:VUONG NGUYEN TRUONG HUNG}") String accountName) {
         this.jdbc=jdbc;this.actors=actors;this.bankBin=bankBin.strip();
         this.accountNumber=accountNumber.strip();this.accountName=accountName.strip();
         this.sqlite=Boolean.TRUE.equals(jdbc.execute((org.springframework.jdbc.core.ConnectionCallback<Boolean>) connection ->

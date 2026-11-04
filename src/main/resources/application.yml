@@ -15,4 +15,9 @@ server:
   error:
     include-message: never
 
-# Ảnh tải lên được kiểm tra và chuyển thành PNG ở backend.
+# Anh tai len duoc kiem tra va chuyen thanh PNG o backend.
+
+# Cau hinh mac dinh VietQR (MB Bank)
+QLNS_VIETQR_BANK_BIN: ${VIETQR_BANK_BIN:970422}
+QLNS_VIETQR_ACCOUNT_NUMBER: ${VIETQR_ACCOUNT_NUMBER:0387196095}
+QLNS_VIETQR_ACCOUNT_NAME: ${VIETQR_ACCOUNT_NAME:VUONG NGUYEN TRUONG HUNG}
