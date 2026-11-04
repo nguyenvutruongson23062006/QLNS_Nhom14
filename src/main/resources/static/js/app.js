@@ -299,17 +299,203 @@ async function uploadImage(file,type){
  const data=await res.json().catch(()=>({}));if(!res.ok)throw Error(data.message||'Không tải được ảnh. Hãy thử ảnh JPG/PNG dưới 5 MB.');return data.url;
 }
 async function profilePage(){
- app.innerHTML='<p>Đang tải thông tin cá nhân…</p>';
+ app.innerHTML='<p role="status">Đang tải thông tin cá nhân…</p>';
  try{
- const data=await api('ho-so');
- app.innerHTML=`<span class="eyebrow">KHÔNG GIAN CỦA BẠN</span><h1>Trang cá nhân</h1><div class="profile-layout"><aside class="panel profile-aside"><div id="avatar-placeholder" class="avatar-placeholder">${esc(data.tenDangNhap[0].toUpperCase())}</div><img id="avatar-preview" class="avatar" alt="Ảnh đại diện" hidden><h2>${esc(data.tenDangNhap)}</h2><label class="avatar-label">Đổi ảnh đại diện<input id="avatar-file" type="file" accept="image/png,image/jpeg"></label><p>JPG hoặc PNG, tối đa 5 MB.</p><a href="/yeu-thich.html">♡ Sách yêu thích</a></aside><section class="panel"><h2>Thông tin cá nhân</h2><p>Bạn có thể cập nhật thông tin bất cứ lúc nào.</p><form id="profile-form"><div class="form-grid"><label>Tên đăng nhập<input value="${esc(data.tenDangNhap)}" readonly></label><label>Họ tên *<input name="hoTen" value="${esc(data.hoTen)}" required maxlength="150" autocomplete="name"></label><label>Email *<input name="email" value="${esc(data.email)}" type="email" required maxlength="150" autocomplete="email"></label><label>Số điện thoại<input name="soDienThoai" value="${esc(data.soDienThoai)}" type="tel" pattern="[0-9+() .-]{8,20}" maxlength="20" autocomplete="tel"></label></div><label>Địa chỉ<input name="diaChi" value="${esc(data.diaChi)}" maxlength="500" autocomplete="street-address"></label><label>Thể loại yêu thích của bạn<textarea name="theLoaiYeuThich" maxlength="500" placeholder="Ví dụ: Văn học, Trinh thám, Khoa học…">${esc(data.theLoaiYeuThich)}</textarea></label><p class="field-hint">Tự nhập thể loại bạn thích. Phần này độc lập với thống kê sách đã lưu.</p><input name="anhDaiDien" type="hidden" value="${esc(data.anhDaiDien)}"><div id="message" role="status" hidden></div><button id="profile-save" type="submit">Lưu thông tin</button></form></section></div><section id="favorite-summary" class="favorite-summary"></section>`;
- const form=document.querySelector('#profile-form'),save=document.querySelector('#profile-save');
- function preview(){const url=form.elements.anhDaiDien.value;document.querySelector('#avatar-preview').hidden=!url;document.querySelector('#avatar-placeholder').hidden=!!url;if(url)document.querySelector('#avatar-preview').src=url;}
- preview();
- document.querySelector('#avatar-file').onchange=async e=>{if(!e.target.files[0])return;save.disabled=true;try{form.elements.anhDaiDien.value=await uploadImage(e.target.files[0],'dai-dien');preview();message('Ảnh đã tải lên. Bấm Lưu thông tin để lưu vào hồ sơ.');}catch(err){message(err.message,true);}finally{save.disabled=false;}};
- form.onsubmit=async e=>{e.preventDefault();save.disabled=true;try{await api('ho-so',{method:'PUT',body:JSON.stringify(Object.fromEntries(new FormData(form)))});message('Đã cập nhật thông tin cá nhân.');}catch(err){message(err.message,true);}finally{save.disabled=false;}};
- await renderFavoriteSummary();
- }catch(e){app.innerHTML='<section class="panel"><h1>Chưa tải được hồ sơ</h1><p>Hãy đăng nhập lại hoặc tải lại trang để thử lại.</p><a href="/dang-nhap.html">Đăng nhập</a></section>';}
+  let data=await api('ho-so');
+
+  function renderGenres(genres){
+   if(!genres || !genres.trim()) return '<span class="text-muted">Chưa cập nhật thể loại yêu thích</span>';
+   const tags=genres.split(/[,;\n]+/).map(t=>t.trim()).filter(Boolean);
+   if(!tags.length) return '<span class="text-muted">Chưa cập nhật thể loại yêu thích</span>';
+   return tags.map(t=>`<span class="genre-tag">${esc(t)}</span>`).join('');
+  }
+
+  app.innerHTML=`<span class="eyebrow">KHÔNG GIAN CỦA BẠN</span>
+<h1>Trang cá nhân</h1>
+<div class="profile-layout">
+ <aside class="panel profile-aside">
+  <div id="avatar-placeholder" class="avatar-placeholder">${esc(data.tenDangNhap[0].toUpperCase())}</div>
+  <img id="avatar-preview" class="avatar" alt="Ảnh đại diện" hidden>
+  <h2>${esc(data.tenDangNhap)}</h2>
+  <span class="profile-role-tag">Bạn đọc thành viên</span>
+  <div id="avatar-upload-box" class="avatar-upload-box" hidden>
+   <label class="avatar-label">Tải ảnh đại diện mới
+    <input id="avatar-file" type="file" accept="image/png,image/jpeg">
+   </label>
+   <p class="field-hint" style="margin:6px 0 0">JPG/PNG, tối đa 5 MB.</p>
+  </div>
+  <hr style="border:0;border-top:1px solid #e7ece2;margin:16px 0">
+  <a class="profile-side-link" href="/yeu-thich.html">♡ Sách yêu thích</a>
+  <a class="profile-side-link" href="/don-hang.html">📦 Đơn hàng của bạn</a>
+  <a class="profile-side-link" href="/thue-sach.html">↻ Phiếu thuê sách</a>
+ </aside>
+
+ <section class="panel">
+  <!-- CHẾ ĐỘ XEM (VIEW MODE) MẶC ĐỊNH -->
+  <div id="profile-view-box">
+   <div class="profile-panel-header">
+    <div>
+     <h2>Thông tin cá nhân</h2>
+     <p>Xem thông tin tài khoản và thông tin liên hệ của bạn.</p>
+    </div>
+    <button id="btn-start-edit" class="button" type="button">✏️ Chỉnh sửa hồ sơ</button>
+   </div>
+   <div id="view-message" role="status" hidden></div>
+   <div class="profile-info-grid">
+    <div class="info-item">
+     <small>Tên đăng nhập</small>
+     <strong>${esc(data.tenDangNhap)}</strong>
+    </div>
+    <div class="info-item">
+     <small>Họ và tên</small>
+     <strong id="view-hoTen">${data.hoTen ? esc(data.hoTen) : '<span class="text-muted">Chưa cập nhật</span>'}</strong>
+    </div>
+    <div class="info-item">
+     <small>Địa chỉ email</small>
+     <strong id="view-email">${data.email ? esc(data.email) : '<span class="text-muted">Chưa cập nhật</span>'}</strong>
+    </div>
+    <div class="info-item">
+     <small>Số điện thoại</small>
+     <strong id="view-soDienThoai">${data.soDienThoai ? esc(data.soDienThoai) : '<span class="text-muted">Chưa cập nhật</span>'}</strong>
+    </div>
+    <div class="info-item full-width">
+     <small>Địa chỉ nhận hàng</small>
+     <strong id="view-diaChi">${data.diaChi ? esc(data.diaChi) : '<span class="text-muted">Chưa cập nhật</span>'}</strong>
+    </div>
+    <div class="info-item full-width">
+     <small>Thể loại sách yêu thích</small>
+     <div id="view-theLoai" class="genre-tags">${renderGenres(data.theLoaiYeuThich)}</div>
+    </div>
+   </div>
+  </div>
+
+  <!-- CHẾ ĐỘ CHỈNH SỬA (EDIT MODE - MẶC ĐỊNH ẨN) -->
+  <div id="profile-edit-box" hidden>
+   <div class="profile-panel-header">
+    <div>
+     <h2>Chỉnh sửa thông tin cá nhân</h2>
+     <p>Cập nhật họ tên, địa chỉ nhận hàng và thể loại quan tâm.</p>
+    </div>
+   </div>
+   <form id="profile-form">
+    <div class="form-grid">
+     <label>Tên đăng nhập
+      <input value="${esc(data.tenDangNhap)}" readonly disabled style="background:#f3f5ee;color:#6b7280;cursor:not-allowed">
+     </label>
+     <label>Họ tên *
+      <input name="hoTen" id="input-hoTen" value="${esc(data.hoTen)}" required maxlength="150" autocomplete="name">
+     </label>
+     <label>Email *
+      <input name="email" id="input-email" value="${esc(data.email)}" type="email" required maxlength="150" autocomplete="email">
+     </label>
+     <label>Số điện thoại
+      <input name="soDienThoai" id="input-soDienThoai" value="${esc(data.soDienThoai)}" type="tel" pattern="[0-9+() .-]{8,20}" maxlength="20" autocomplete="tel">
+     </label>
+    </div>
+    <label>Địa chỉ nhận hàng
+     <input name="diaChi" id="input-diaChi" value="${esc(data.diaChi)}" maxlength="500" autocomplete="street-address">
+    </label>
+    <label>Thể loại yêu thích của bạn
+     <textarea name="theLoaiYeuThich" id="input-theLoai" maxlength="500" placeholder="Ví dụ: Văn học, Kinh doanh, Khoa học…">${esc(data.theLoaiYeuThich)}</textarea>
+    </label>
+    <p class="field-hint">Nhập các thể loại bạn thích, phân cách bằng dấu phẩy.</p>
+    <input name="anhDaiDien" id="input-anhDaiDien" type="hidden" value="${esc(data.anhDaiDien)}">
+    <div id="edit-message" role="status" hidden></div>
+    <div class="profile-edit-actions">
+     <button id="profile-save" type="submit">💾 Lưu thay đổi</button>
+     <button id="btn-cancel-edit" class="secondary" type="button">✕ Hủy bỏ</button>
+    </div>
+   </form>
+  </div>
+ </section>
+</div>
+<section id="favorite-summary" class="favorite-summary"></section>`;
+
+  const viewBox=document.querySelector('#profile-view-box');
+  const editBox=document.querySelector('#profile-edit-box');
+  const avatarUploadBox=document.querySelector('#avatar-upload-box');
+  const btnStartEdit=document.querySelector('#btn-start-edit');
+  const btnCancelEdit=document.querySelector('#btn-cancel-edit');
+  const form=document.querySelector('#profile-form');
+  const saveBtn=document.querySelector('#profile-save');
+  const avatarFile=document.querySelector('#avatar-file');
+  const viewNotice=document.querySelector('#view-message');
+  const editNotice=document.querySelector('#edit-message');
+
+  function updateAvatarPreview(url){
+   const previewEl=document.querySelector('#avatar-preview');
+   const placeholderEl=document.querySelector('#avatar-placeholder');
+   previewEl.hidden=!url;
+   placeholderEl.hidden=!!url;
+   if(url) previewEl.src=url;
+  }
+  updateAvatarPreview(data.anhDaiDien);
+
+  function enterEditMode(){
+   viewBox.hidden=true;
+   editBox.hidden=false;
+   avatarUploadBox.hidden=false;
+   form.elements.hoTen.value=data.hoTen||'';
+   form.elements.email.value=data.email||'';
+   form.elements.soDienThoai.value=data.soDienThoai||'';
+   form.elements.diaChi.value=data.diaChi||'';
+   form.elements.theLoaiYeuThich.value=data.theLoaiYeuThich||'';
+   form.elements.anhDaiDien.value=data.anhDaiDien||'';
+   updateAvatarPreview(data.anhDaiDien);
+   editNotice.hidden=true;
+  }
+
+  function exitEditMode(){
+   editBox.hidden=true;
+   avatarUploadBox.hidden=true;
+   viewBox.hidden=false;
+   updateAvatarPreview(data.anhDaiDien);
+  }
+
+  btnStartEdit.onclick=enterEditMode;
+  btnCancelEdit.onclick=exitEditMode;
+
+  avatarFile.onchange=async e=>{
+   if(!e.target.files[0])return;
+   saveBtn.disabled=true;
+   try{
+    const url=await uploadImage(e.target.files[0],'dai-dien');
+    form.elements.anhDaiDien.value=url;
+    updateAvatarPreview(url);
+    message('Ảnh đại diện đã được tải lên tạm thời. Bấm "Lưu thay đổi" để áp dụng.',false,editNotice);
+   }catch(err){
+    message(err.message,true,editNotice);
+   }finally{
+    saveBtn.disabled=false;
+   }
+  };
+
+  form.onsubmit=async e=>{
+   e.preventDefault();
+   saveBtn.disabled=true;
+   try{
+    const payload=Object.fromEntries(new FormData(form));
+    const updated=await api('ho-so',{method:'PUT',body:JSON.stringify(payload)});
+    data=updated;
+    document.querySelector('#view-hoTen').innerHTML=data.hoTen?esc(data.hoTen):'<span class="text-muted">Chưa cập nhật</span>';
+    document.querySelector('#view-email').innerHTML=data.email?esc(data.email):'<span class="text-muted">Chưa cập nhật</span>';
+    document.querySelector('#view-soDienThoai').innerHTML=data.soDienThoai?esc(data.soDienThoai):'<span class="text-muted">Chưa cập nhật</span>';
+    document.querySelector('#view-diaChi').innerHTML=data.diaChi?esc(data.diaChi):'<span class="text-muted">Chưa cập nhật</span>';
+    document.querySelector('#view-theLoai').innerHTML=renderGenres(data.theLoaiYeuThich);
+    updateAvatarPreview(data.anhDaiDien);
+    exitEditMode();
+    message('Đã cập nhật thông tin cá nhân thành công.',false,viewNotice);
+   }catch(err){
+    message(err.message,true,editNotice);
+   }finally{
+    saveBtn.disabled=false;
+   }
+  };
+
+  await renderFavoriteSummary();
+ }catch(e){
+  app.innerHTML='<section class="panel"><h1>Chưa tải được hồ sơ</h1><p>Hãy đăng nhập lại hoặc tải lại trang để thử lại.</p><a href="/dang-nhap.html">Đăng nhập</a></section>';
+ }
 }
 async function start(){
  const path=location.pathname;try{currentUser=await api('auth/me');}catch(e){}

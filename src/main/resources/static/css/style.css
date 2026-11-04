@@ -475,3 +475,132 @@ h1, h2, h3, .eyebrow { font-family: "Segoe UI", Arial, sans-serif; }
   line-height: 1.5;
   letter-spacing: normal;
 }
+
+
+/* Trang ca nhan: Che do Xem (View) va Chinh sua (Edit) */
+.profile-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e7ece2;
+}
+.profile-panel-header h2 {
+  margin: 0 0 6px 0;
+  font-size: 24px;
+}
+.profile-panel-header p {
+  margin: 0;
+  color: #647262;
+  font-size: 13.5px;
+}
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.info-item {
+  background: #fbfbf8;
+  border: 1px solid #e3e7db;
+  border-radius: 8px;
+  padding: 14px 18px;
+}
+.info-item.full-width {
+  grid-column: 1 / -1;
+}
+.info-item small {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: #6d7667;
+  margin-bottom: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.info-item strong {
+  display: block;
+  font-size: 15px;
+  color: #1e3a2f;
+  font-weight: 600;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.text-muted {
+  color: #8c9688;
+  font-style: italic;
+  font-weight: 400;
+}
+.genre-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.genre-tag {
+  background: #eaf1e7;
+  color: #1a5642;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border: 1px solid #c9dac5;
+}
+.profile-edit-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 20px;
+}
+.profile-edit-actions button {
+  min-width: 130px;
+}
+.avatar-upload-box {
+  background: #f3f7ef;
+  border: 1px dashed #b5cca9;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 15px 0;
+}
+.avatar-upload-box .avatar-label {
+  font-weight: 600;
+  color: #1a5642;
+  cursor: pointer;
+  display: block;
+}
+.profile-role-tag {
+  display: inline-block;
+  background: #e6ede1;
+  color: #21533c;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  margin: 8px 0 14px;
+}
+.profile-side-link {
+  display: block;
+  text-decoration: none;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2e4a3e;
+  margin-bottom: 6px;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+.profile-side-link:hover {
+  background: #eaf1e7;
+  color: #175a48;
+}
+@media (max-width: 650px) {
+  .profile-info-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
