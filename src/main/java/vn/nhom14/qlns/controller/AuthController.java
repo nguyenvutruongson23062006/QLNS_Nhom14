@@ -20,7 +20,12 @@ public class AuthController {
  @GetMapping("/csrf") public Map<String,String> csrf(CsrfToken token){return Map.of("token",token.getToken(),"headerName",token.getHeaderName());}
  @GetMapping("/me") public Map<String,String> me(Authentication auth){
   if(auth==null)return Map.of("role","GUEST");
-  return Map.of("username",auth.getName(),"role",SecurityConfig.role(auth));
+  String avatar = "";
+  try {
+   var list = jdbc.query("SELECT h.anh_dai_dien FROM tai_khoan t JOIN ho_so_ca_nhan h ON h.tai_khoan_id=t.id WHERE t.ten_dang_nhap=?", (rs, i) -> rs.getString(1), auth.getName());
+   if(!list.isEmpty() && list.getFirst() != null) avatar = list.getFirst();
+  } catch(Exception ignored){}
+  return Map.of("username",auth.getName(),"role",SecurityConfig.role(auth),"avatar",avatar);
  }
  public record Register(@NotBlank @Pattern(regexp="[a-zA-Z0-9_]{4,50}") String username,@NotBlank @Size(min=8,max=72) String password,@NotBlank @Email @Size(max=150) String email,@NotBlank @Size(max=150) String hoTen){}
  @PostMapping("/register") @ResponseStatus(HttpStatus.CREATED) @Transactional

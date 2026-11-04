@@ -543,6 +543,15 @@ async function profilePage(){
     document.querySelector('#view-diaChi').innerHTML=data.diaChi?esc(data.diaChi):'<span class="text-muted">Chưa cập nhật</span>';
     document.querySelector('#view-theLoai').innerHTML=renderGenres(data.theLoaiYeuThich);
     updateAvatarPreview(data.anhDaiDien);
+    currentUser.avatar = data.anhDaiDien;
+    const navDot = document.querySelector('.user-menu-btn .user-avatar-dot');
+    if (navDot) {
+      if (data.anhDaiDien) {
+        navDot.innerHTML = '<img src="' + esc(data.anhDaiDien) + '" alt="' + esc(currentUser.username) + '" onerror="this.parentElement.textContent=\'' + esc(currentUser.username[0].toUpperCase()) + '\'">';
+      } else {
+        navDot.textContent = currentUser.username[0].toUpperCase();
+      }
+    }
     exitEditMode();
     message('Đã cập nhật thông tin cá nhân thành công.',false,viewNotice);
    }catch(err){
@@ -557,14 +566,20 @@ async function profilePage(){
   app.innerHTML='<section class="panel"><h1>Chưa tải được hồ sơ</h1><p>Hãy đăng nhập lại hoặc tải lại trang để thử lại.</p><a href="/dang-nhap.html">Đăng nhập</a></section>';
  }
 }
+function renderUserAvatarDot(u) {
+  if (u && u.avatar) {
+    return '<span class="user-avatar-dot"><img src="' + esc(u.avatar) + '" alt="' + esc(u.username) + '" onerror="this.parentElement.textContent=\'' + esc(u.username[0].toUpperCase()) + '\'"></span>';
+  }
+  return '<span class="user-avatar-dot ' + (isStaffRole(u ? u.role : '') ? 'staff' : '') + '">' + esc(u ? u.username[0].toUpperCase() : 'U') + '</span>';
+}
 async function start(){
  const path=location.pathname;try{currentUser=await api('auth/me');}catch(e){}
  if(currentUser.role==='KHACH_HANG'){try{favoriteIds=new Set(await api('yeu-thich/ids'));}catch(e){favoriteIds=new Set();}}
  let actionsHtml='';
  if(currentUser.role==='KHACH_HANG'){
-  actionsHtml=`<a href="/yeu-thich.html" class="nav-icon-btn" title="Sách yêu thích" aria-label="Sách yêu thích">♡</a><a href="/gio-hang.html" class="nav-icon-btn" title="Giỏ hàng" aria-label="Giỏ hàng">🛒<span class="cart-badge" data-cart-count>0</span></a><div class="user-menu-wrapper"><button class="user-menu-btn" id="user-menu-btn" type="button" aria-expanded="false" aria-haspopup="true"><span class="user-avatar-dot">${esc(currentUser.username[0].toUpperCase())}</span><span>${esc(currentUser.username)}</span><span class="user-caret">▼</span></button><div class="user-dropdown-box" id="user-menu" hidden><div class="user-dropdown-header"><strong>${esc(currentUser.username)}</strong><small>Bạn đọc thành viên</small></div><a href="/ca-nhan.html">👤 Thông tin cá nhân</a><a href="/don-hang.html">📦 Đơn hàng của bạn</a><a href="/yeu-thich.html">♡ Sách yêu thích</a><hr><button id="logout" class="user-dropdown-logout" type="button">⎋ Đăng xuất</button></div></div>`;
+  actionsHtml=`<a href="/yeu-thich.html" class="nav-icon-btn" title="Sách yêu thích" aria-label="Sách yêu thích">♡</a><a href="/gio-hang.html" class="nav-icon-btn" title="Giỏ hàng" aria-label="Giỏ hàng">🛒<span class="cart-badge" data-cart-count>0</span></a><div class="user-menu-wrapper"><button class="user-menu-btn" id="user-menu-btn" type="button" aria-expanded="false" aria-haspopup="true">${renderUserAvatarDot(currentUser)}<span>${esc(currentUser.username)}</span><span class="user-caret">▼</span></button><div class="user-dropdown-box" id="user-menu" hidden><div class="user-dropdown-header"><strong>${esc(currentUser.username)}</strong><small>Bạn đọc thành viên</small></div><a href="/ca-nhan.html">👤 Thông tin cá nhân</a><a href="/don-hang.html">📦 Đơn hàng của bạn</a><a href="/yeu-thich.html">♡ Sách yêu thích</a><hr><button id="logout" class="user-dropdown-logout" type="button">⎋ Đăng xuất</button></div></div>`;
  } else if(isStaffRole(currentUser.role)){
-  actionsHtml=`<div class="user-menu-wrapper"><button class="user-menu-btn" id="user-menu-btn" type="button" aria-expanded="false" aria-haspopup="true"><span class="user-avatar-dot staff">${esc(currentUser.username[0].toUpperCase())}</span><span>${esc(currentUser.username)} · ${currentUser.role==='ADMIN'?'Admin':'NV'}</span><span class="user-caret">▼</span></button><div class="user-dropdown-box" id="user-menu" hidden><div class="user-dropdown-header"><strong>${esc(currentUser.username)}</strong><small>${currentUser.role==='ADMIN'?'Quản trị hệ thống':'Nhân viên'}</small></div><a href="/quan-tri.html">⚙️ Trang quản trị</a><hr><button id="logout" class="user-dropdown-logout" type="button">⎋ Đăng xuất</button></div></div>`;
+  actionsHtml=`<div class="user-menu-wrapper"><button class="user-menu-btn" id="user-menu-btn" type="button" aria-expanded="false" aria-haspopup="true">${renderUserAvatarDot(currentUser)}<span>${esc(currentUser.username)} · ${currentUser.role==='ADMIN'?'Admin':'NV'}</span><span class="user-caret">▼</span></button><div class="user-dropdown-box" id="user-menu" hidden><div class="user-dropdown-header"><strong>${esc(currentUser.username)}</strong><small>${currentUser.role==='ADMIN'?'Quản trị hệ thống':'Nhân viên'}</small></div><a href="/quan-tri.html">⚙️ Trang quản trị</a><hr><button id="logout" class="user-dropdown-logout" type="button">⎋ Đăng xuất</button></div></div>`;
  } else {
   actionsHtml=`<a href="/dang-nhap.html" class="nav-login-link">Đăng nhập</a>`;
  }

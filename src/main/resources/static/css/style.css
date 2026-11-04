@@ -939,3 +939,22 @@ table th, table td {
 footer, .storefront footer {
   font-size: 15px !important;
 }
+.user-avatar-dot {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  background: #175a48 !important;
+  color: #ffffff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  vertical-align: middle !important;
+}
+.user-avatar-dot img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+  display: block !important;
+}
