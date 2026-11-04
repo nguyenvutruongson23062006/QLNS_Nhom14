@@ -174,7 +174,7 @@ public class RentalService {
         }
         jdbc.update("UPDATE thanh_toan SET trang_thai='THAT_BAI',ghi_chu='Đã trả sách trước khi hoàn tất gia hạn' WHERE tham_chieu_id=? AND tham_chieu_loai='GIA_HAN' AND trang_thai IN ('CHO_THANH_TOAN','CHO_DOI_SOAT')",id);
         jdbc.update("UPDATE phieu_thue SET trang_thai='HOAN_THANH',tong_phi_phat=?,nhan_vien_nhan_id=?,ngay_hoan_tat=CURRENT_TIMESTAMP WHERE id=?",total,actor.accountId(),id);
-        if(total.signum()>0)createPayment(rental.customerId(),id,"TRA_PHIEU_THUE","PHI_PHAT",total,"TIEN_MAT");
+        if(total.signum()>0)createPayment(rental.customerId(),id,"TRA_PHIEU_THUE","PHI_PHAT",total,"VIETQR");
         log(id,"DANG_THUE","HOAN_THANH",actor.accountId(),"Đã kiểm nhận "+details.size()+" bản sách");return getInternal(id);
     }
 

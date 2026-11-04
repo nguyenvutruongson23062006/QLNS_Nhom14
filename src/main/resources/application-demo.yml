@@ -11,3 +11,8 @@ spring:
       encoding: UTF-8
       schema-locations: classpath:db/schema.sql,classpath:db/rental-schema.sql
       data-locations: classpath:db/data.sql
+
+# Cau hinh VietQR de hien thi ma QR thanh toan (MB Bank demo)
+QLNS_VIETQR_BANK_BIN: "970422"
+QLNS_VIETQR_ACCOUNT_NUMBER: "0387196095"
+QLNS_VIETQR_ACCOUNT_NAME: "VUONG NGUYEN TRUONG HUNG"

@@ -14,7 +14,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,properties={
+        "QLNS_VIETQR_BANK_BIN=970436","QLNS_VIETQR_ACCOUNT_NUMBER=123456789","QLNS_VIETQR_ACCOUNT_NAME=NHOM 14"})
 @ActiveProfiles("demo")
 class UsedBookIntegrationTests {
     @Value("${local.server.port}") int port;
@@ -29,7 +30,7 @@ class UsedBookIntegrationTests {
     record Customer(Session session,long id){}
 
     @AfterEach void cleanup(){
-        for(String username:accounts){String customer="SELECT k.id FROM khach_hang k JOIN tai_khoan t ON t.id=k.tai_khoan_id WHERE t.ten_dang_nhap=?";jdbc.update("DELETE FROM chi_tiet_don_hang_sach_cu WHERE don_hang_id IN(SELECT id FROM don_hang WHERE khach_hang_id IN("+customer+"))",username);jdbc.update("DELETE FROM chi_tiet_don_hang WHERE don_hang_id IN(SELECT id FROM don_hang WHERE khach_hang_id IN("+customer+"))",username);jdbc.update("DELETE FROM don_hang WHERE khach_hang_id IN("+customer+")",username);jdbc.update("DELETE FROM chi_tiet_phieu_thue WHERE phieu_thue_id IN(SELECT id FROM phieu_thue WHERE khach_hang_id IN("+customer+"))",username);jdbc.update("DELETE FROM phieu_thue WHERE khach_hang_id IN("+customer+")",username);jdbc.update("DELETE FROM khach_hang WHERE tai_khoan_id IN(SELECT id FROM tai_khoan WHERE ten_dang_nhap=?)",username);jdbc.update("DELETE FROM tai_khoan WHERE ten_dang_nhap=?",username);}
+        for(String username:accounts){String customer="SELECT k.id FROM khach_hang k JOIN tai_khoan t ON t.id=k.tai_khoan_id WHERE t.ten_dang_nhap=?";jdbc.update("DELETE FROM chi_tiet_don_hang_sach_cu WHERE don_hang_id IN(SELECT id FROM don_hang WHERE khach_hang_id IN("+customer+"))",username);jdbc.update("DELETE FROM chi_tiet_don_hang WHERE don_hang_id IN(SELECT id FROM don_hang WHERE khach_hang_id IN("+customer+"))",username);jdbc.update("DELETE FROM thanh_toan WHERE khach_hang_id IN("+customer+")",username);jdbc.update("DELETE FROM don_hang WHERE khach_hang_id IN("+customer+")",username);jdbc.update("DELETE FROM chi_tiet_phieu_thue WHERE phieu_thue_id IN(SELECT id FROM phieu_thue WHERE khach_hang_id IN("+customer+"))",username);jdbc.update("DELETE FROM phieu_thue WHERE khach_hang_id IN("+customer+")",username);jdbc.update("DELETE FROM khach_hang WHERE tai_khoan_id IN(SELECT id FROM tai_khoan WHERE ten_dang_nhap=?)",username);jdbc.update("DELETE FROM tai_khoan WHERE ten_dang_nhap=?",username);}
         for(Long book:books){jdbc.update("DELETE FROM sach_cu WHERE ban_sao_id IN(SELECT id FROM ban_sao_sach WHERE sach_id=?)",book);jdbc.update("DELETE FROM ban_sao_sach WHERE sach_id=?",book);jdbc.update("DELETE FROM cau_hinh_thue_sach WHERE sach_id=?",book);jdbc.update("DELETE FROM sach WHERE id=?",book);}
     }
     Session admin()throws Exception {Session s=new Session();s.login("admin","Admin@123456");return s;}
@@ -44,7 +45,7 @@ class UsedBookIntegrationTests {
         assertEquals(400,admin.json("PATCH","/api/used-books/"+used+"/approve","{\"giaBan\":100000}").statusCode());
         assertEquals(200,admin.json("PATCH","/api/used-books/"+used+"/approve","{\"giaBan\":52000}").statusCode());assertTrue(first.session().json("GET","/api/used-books",null).body().contains("Sách đã qua thuê"));
         String token=UUID.randomUUID().toString(),body="{\"tenNguoiNhan\":\"Khách một\",\"soDienThoaiNhan\":\"0901234567\",\"diaChiGiao\":\"Quận 1\",\"ghiChu\":\"Giao giờ hành chính\",\"clientRequestId\":\""+token+"\",\"sachCuIds\":["+used+"]}";
-        var order=first.session().json("POST","/api/used-books/orders",body);assertEquals(201,order.statusCode(),order.body());assertTrue(order.body().contains("\"loaiHang\":\"SACH_CU\""));long orderId=field(order.body(),"id");
+        var order=first.session().json("POST","/api/used-books/orders",body);assertEquals(201,order.statusCode(),order.body());assertTrue(order.body().contains("\"loaiHang\":\"SACH_CU\""));assertTrue(order.body().contains("img.vietqr.io"),order.body());long orderId=field(order.body(),"id");
         assertEquals(201,first.session().json("POST","/api/used-books/orders",body).statusCode());
         assertEquals(409,first.session().json("POST","/api/used-books/orders",body.replace("Giao giờ hành chính","Giao buổi tối")).statusCode());
         assertEquals(400,first.session().json("POST","/api/used-books/orders",body.replace(token,"------------------------------------")).statusCode());

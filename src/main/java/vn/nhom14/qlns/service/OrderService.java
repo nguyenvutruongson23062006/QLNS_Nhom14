@@ -22,9 +22,11 @@ public class OrderService {
     private static final BigDecimal MAX_TOTAL=new BigDecimal("9999999999999.99");
     private static final String HEADERS="SELECT o.*,k.ho_ten AS ho_ten_khach_hang FROM don_hang o JOIN khach_hang k ON k.id=o.khach_hang_id ";
     private final JdbcTemplate jdbc;
+    private final PaymentService payments;
     private final boolean sqlite;
-    public OrderService(JdbcTemplate jdbc){
+    public OrderService(JdbcTemplate jdbc,PaymentService payments){
         this.jdbc=jdbc;
+        this.payments=payments;
         this.sqlite=Boolean.TRUE.equals(jdbc.execute((org.springframework.jdbc.core.ConnectionCallback<Boolean>) c ->
                 c.getMetaData().getDatabaseProductName().toLowerCase(Locale.ROOT).contains("sqlite")));
     }
@@ -137,6 +139,7 @@ public class OrderService {
             if(changed!=1)throw error(HttpStatus.CONFLICT,"Tồn kho vừa thay đổi, vui lòng đặt lại");
             jdbc.update("INSERT INTO chi_tiet_don_hang(don_hang_id,sach_id,so_luong,don_gia) VALUES(?,?,?,?)",id,item.sachId(),item.soLuong(),item.donGia());
         }
+        payments.createOrderPayment(user.customerId(),id,orderTotal);
         return getFor(user,id);
     }
 
@@ -162,6 +165,9 @@ public class OrderService {
         };
         if(!allowed)throw error(HttpStatus.CONFLICT,"Không thể chuyển từ "+order.state()+" sang "+state);
         if(state.equals("DA_HUY")){
+            String paymentState=jdbc.query("SELECT trang_thai FROM thanh_toan WHERE tham_chieu_loai='DON_HANG' AND tham_chieu_id=? ORDER BY id DESC LIMIT 1",
+                    (result,index)->result.getString(1),id).stream().findFirst().orElse(null);
+            if("DA_THANH_TOAN".equals(paymentState))throw error(HttpStatus.CONFLICT,"Đơn đã thanh toán; cần xử lý hoàn tiền trước khi hủy");
             var items=jdbc.query("SELECT sach_id,so_luong FROM chi_tiet_don_hang WHERE don_hang_id=? ORDER BY sach_id",
                     (r,i)->new long[]{r.getLong(1),r.getInt(2)},id);
             for(long[] item:items){
@@ -174,6 +180,7 @@ public class OrderService {
                         SELECT sach_cu_id FROM chi_tiet_don_hang_sach_cu WHERE don_hang_id=?)
                     AND trang_thai='DA_BAN'
                     """,id);
+            jdbc.update("UPDATE thanh_toan SET trang_thai='THAT_BAI',ghi_chu='Đơn hàng đã hủy' WHERE tham_chieu_loai='DON_HANG' AND tham_chieu_id=? AND trang_thai IN ('CHO_THANH_TOAN','CHO_DOI_SOAT')",id);
         }
         if(state.equals("HOAN_THANH")){
             jdbc.update("""
@@ -194,7 +201,7 @@ public class OrderService {
     private OrderResponse header(ResultSet r,int index)throws SQLException{
         return new OrderResponse(r.getLong("id"),r.getString("ma_don_hang"),r.getLong("khach_hang_id"),r.getString("ho_ten_khach_hang"),
                 r.getString("trang_thai"),r.getString("ten_nguoi_nhan"),r.getString("so_dien_thoai_nhan"),r.getString("dia_chi_giao"),
-                r.getBigDecimal("tong_tien"),r.getString("ghi_chu"),r.getTimestamp("ngay_dat").toLocalDateTime(),List.of());
+                r.getBigDecimal("tong_tien"),r.getString("ghi_chu"),r.getTimestamp("ngay_dat").toLocalDateTime(),List.of(),null);
     }
     private List<OrderResponse> withItems(List<OrderResponse> headers){
         if(headers.isEmpty())return headers;Map<Long,List<OrderResponse.Item>> items=new HashMap<>();
@@ -218,7 +225,8 @@ public class OrderService {
                     new OrderResponse.Item(r.getLong("sach_id"),r.getString("ma_sach"),r.getString("ten_sach"),r.getString("hinh_anh"),1,price,price,"SACH_CU",r.getLong("sach_cu_id"),r.getString("tinh_trang")));
         },headers.stream().map(order -> Objects.requireNonNull(order).id()).toArray());
         return headers.stream().map(o->new OrderResponse(o.id(),o.maDonHang(),o.khachHangId(),o.hoTenKhachHang(),o.trangThai(),o.tenNguoiNhan(),
-                o.soDienThoaiNhan(),o.diaChiGiao(),o.tongTien(),o.ghiChu(),o.ngayDat(),List.copyOf(items.getOrDefault(o.id(),List.of())))).toList();
+                o.soDienThoaiNhan(),o.diaChiGiao(),o.tongTien(),o.ghiChu(),o.ngayDat(),List.copyOf(items.getOrDefault(o.id(),List.of())),
+                payments.getLatestForReference("DON_HANG",o.id()))).toList();
     }
     private static ResponseStatusException error(HttpStatus status,String message){return new ResponseStatusException(status,message);}
     private static String normalizeNote(String value){return value==null||value.isBlank()?null:value.strip();}

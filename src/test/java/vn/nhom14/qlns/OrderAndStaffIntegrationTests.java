@@ -14,7 +14,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,properties={
+        "QLNS_VIETQR_BANK_BIN=970436","QLNS_VIETQR_ACCOUNT_NUMBER=123456789","QLNS_VIETQR_ACCOUNT_NAME=NHOM 14"})
 @ActiveProfiles("demo")
 class OrderAndStaffIntegrationTests {
     @Value("${local.server.port}") int port;
@@ -41,6 +42,7 @@ class OrderAndStaffIntegrationTests {
     @AfterEach void cleanup(){
         for(String name:accounts){
             jdbc.update("DELETE FROM chi_tiet_don_hang WHERE don_hang_id IN(SELECT o.id FROM don_hang o JOIN khach_hang k ON k.id=o.khach_hang_id JOIN tai_khoan t ON t.id=k.tai_khoan_id WHERE t.ten_dang_nhap=?)",name);
+            jdbc.update("DELETE FROM thanh_toan WHERE khach_hang_id IN(SELECT k.id FROM khach_hang k JOIN tai_khoan t ON t.id=k.tai_khoan_id WHERE t.ten_dang_nhap=?)",name);
             jdbc.update("DELETE FROM don_hang WHERE khach_hang_id IN(SELECT k.id FROM khach_hang k JOIN tai_khoan t ON t.id=k.tai_khoan_id WHERE t.ten_dang_nhap=?)",name);
             jdbc.update("DELETE FROM khach_hang WHERE tai_khoan_id IN(SELECT id FROM tai_khoan WHERE ten_dang_nhap=?)",name);
             jdbc.update("DELETE FROM tai_khoan WHERE ten_dang_nhap=?",name);
@@ -87,11 +89,15 @@ class OrderAndStaffIntegrationTests {
     @Test void checkoutUsesServerPriceIsIdempotentAndCancellationRestoresOnce()throws Exception{
         var customer=customer();long book=book(3);String token=UUID.randomUUID().toString(),body=order(book,2,token);
         var first=customer.json("POST","/api/orders",body);assertEquals(201,first.statusCode(),first.body());long order=id(first.body());
+        assertTrue(first.body().contains("img.vietqr.io"),first.body());
+        assertTrue(first.body().contains("\"mucDich\":\"DON_HANG\""),first.body());
         assertEquals(1,jdbc.queryForObject("SELECT so_luong_ton FROM sach WHERE id=?",Integer.class,book));
         assertEquals(order,id(customer.json("POST","/api/orders",body).body()));
         assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM don_hang WHERE id=?",Integer.class,order));
+        assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM thanh_toan WHERE tham_chieu_loai='DON_HANG' AND tham_chieu_id=?",Integer.class,order));
         assertEquals(200,customer.json("PATCH","/api/orders/"+order+"/status","{\"trangThai\":\"DA_HUY\"}").statusCode());
         assertEquals(200,customer.json("PATCH","/api/orders/"+order+"/status","{\"trangThai\":\"DA_HUY\"}").statusCode());
+        assertEquals("THAT_BAI",jdbc.queryForObject("SELECT trang_thai FROM thanh_toan WHERE tham_chieu_loai='DON_HANG' AND tham_chieu_id=?",String.class,order));
         assertEquals(3,jdbc.queryForObject("SELECT so_luong_ton FROM sach WHERE id=?",Integer.class,book));
     }
 

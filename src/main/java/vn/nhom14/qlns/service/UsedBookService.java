@@ -25,8 +25,8 @@ public class UsedBookService {
                 sc.gia_de_xuat,sc.gia_ban,sc.tinh_trang,sc.mo_ta,sc.trang_thai
             FROM sach_cu sc JOIN ban_sao_sach b ON b.id=sc.ban_sao_id JOIN sach s ON s.id=b.sach_id
             """;
-    private final JdbcTemplate jdbc;private final CurrentActorService actors;private final OrderService orders;private final boolean sqlite;
-    public UsedBookService(JdbcTemplate jdbc,CurrentActorService actors,OrderService orders){this.jdbc=jdbc;this.actors=actors;this.orders=orders;this.sqlite=Boolean.TRUE.equals(jdbc.execute((org.springframework.jdbc.core.ConnectionCallback<Boolean>) c->c.getMetaData().getDatabaseProductName().toLowerCase(Locale.ROOT).contains("sqlite")));}
+    private final JdbcTemplate jdbc;private final CurrentActorService actors;private final OrderService orders;private final PaymentService payments;private final boolean sqlite;
+    public UsedBookService(JdbcTemplate jdbc,CurrentActorService actors,OrderService orders,PaymentService payments){this.jdbc=jdbc;this.actors=actors;this.orders=orders;this.payments=payments;this.sqlite=Boolean.TRUE.equals(jdbc.execute((org.springframework.jdbc.core.ConnectionCallback<Boolean>) c->c.getMetaData().getDatabaseProductName().toLowerCase(Locale.ROOT).contains("sqlite")));}
 
     public List<UsedBookResponse> listForSale(){return jdbc.query(SELECT+" WHERE sc.trang_thai='DANG_BAN' ORDER BY sc.ngay_duyet DESC,sc.id DESC",this::map);}
     public List<UsedBookResponse> manage(Authentication auth){actors.require(auth).requireStaff();return jdbc.query(SELECT+" ORDER BY sc.id DESC",this::map);}
@@ -83,6 +83,7 @@ public class UsedBookService {
         BigDecimal orderTotal=total;var key=new GeneratedKeyHolder();
         jdbc.update(connection->{PreparedStatement s=connection.prepareStatement("INSERT INTO don_hang(ma_don_hang,khach_hang_id,ten_nguoi_nhan,so_dien_thoai_nhan,dia_chi_giao,tong_tien,ghi_chu) VALUES(?,?,?,?,?,?,?)",new String[]{"id"});s.setString(1,code);s.setLong(2,customerId);s.setString(3,request.tenNguoiNhan().strip());s.setString(4,request.soDienThoaiNhan().strip());s.setString(5,request.diaChiGiao().strip());s.setBigDecimal(6,orderTotal);s.setString(7,normalize(request.ghiChu()));return s;},key);
         long orderId=Objects.requireNonNull(key.getKey()).longValue();for(UsedBookResponse item:items){int changed=jdbc.update("UPDATE sach_cu SET trang_thai='DA_BAN' WHERE id=? AND trang_thai='DANG_BAN'",item.id());if(changed!=1)throw error(HttpStatus.CONFLICT,"Sách cũ vừa được khách khác đặt");jdbc.update("INSERT INTO chi_tiet_don_hang_sach_cu(don_hang_id,sach_cu_id,don_gia) VALUES(?,?,?)",orderId,item.id(),item.giaBan());}
+        payments.createOrderPayment(customerId,orderId,orderTotal);
         return orders.get(auth,orderId);
     }
     private UsedBookResponse locked(long id){var rows=jdbc.query(lock(SELECT+" WHERE sc.id=?"),this::map,id);if(rows.isEmpty())throw error(HttpStatus.NOT_FOUND,"Không tìm thấy sách cũ");return rows.getFirst();}

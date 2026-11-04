@@ -1,6 +1,7 @@
 package vn.nhom14.qlns.service;
 
 import java.net.URLEncoder;
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
@@ -52,6 +53,19 @@ public class PaymentService {
         var rows=jdbc.query("SELECT * FROM thanh_toan WHERE tham_chieu_loai=? AND tham_chieu_id=? ORDER BY id DESC LIMIT 1",
                 this::map,type,referenceId);
         return rows.isEmpty()?null:rows.getFirst();
+    }
+
+    @Transactional(timeout=10)
+    public PaymentResponse createOrderPayment(long customerId,long orderId,BigDecimal amount) {
+        PaymentResponse existing=getLatestForReference("DON_HANG",orderId);
+        if(existing!=null)return existing;
+        String paymentCode="TT"+UUID.randomUUID().toString().replace("-","").substring(0,28).toUpperCase(Locale.ROOT);
+        jdbc.update("""
+                INSERT INTO thanh_toan(ma_thanh_toan,khach_hang_id,muc_dich,tham_chieu_loai,tham_chieu_id,
+                    phuong_thuc,so_tien,noi_dung_chuyen_khoan,trang_thai)
+                VALUES(?,?,'DON_HANG','DON_HANG',?,'VIETQR',?,?,'CHO_DOI_SOAT')
+                """,paymentCode,customerId,orderId,amount,"QLNS "+paymentCode);
+        return getLatestForReference("DON_HANG",orderId);
     }
 
     @Transactional(timeout=10)
