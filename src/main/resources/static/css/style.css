@@ -674,3 +674,176 @@ table th, table td {
 .toast-close {
   font-size: 1.25rem !important;
 }
+/* ================= TĂNG KÍCH THƯỚC CHỮ TO, RÕ RÀNG TRÊN TRANG CHỦ & TOÀN HỆ THỐNG ================= */
+
+/* 1. Header & Thương hiệu */
+.brand {
+  font-size: 24px !important;
+}
+.brand span {
+  font-size: 13.5px !important;
+  letter-spacing: 3.5px !important;
+  color: #3b5247 !important;
+}
+nav a, header nav a, .storefront nav a {
+  font-size: 16px !important;
+}
+
+/* 2. Thanh tìm kiếm & Slogan */
+.shop-search {
+  font-size: 15.5px !important;
+  padding: 24px 0 !important;
+}
+.shop-search > span {
+  font-size: 16px !important;
+  color: #435249 !important;
+  font-weight: 500 !important;
+}
+.shop-search form {
+  border-radius: 8px !important;
+}
+.shop-search input {
+  font-size: 15.5px !important;
+  padding: 13px 18px !important;
+}
+.shop-search button {
+  font-size: 15.5px !important;
+  padding: 13px 22px !important;
+}
+
+/* 3. Hero Banner chính */
+.hero-copy .eyebrow {
+  font-size: 13px !important;
+  letter-spacing: 2px !important;
+  color: #3b5033 !important;
+  font-weight: 700 !important;
+}
+.hero-copy h1 {
+  font-size: 52px !important;
+  line-height: 1.2 !important;
+  margin: 18px 0 !important;
+}
+.hero-copy p {
+  font-size: 16.5px !important;
+  line-height: 1.75 !important;
+  max-width: 460px !important;
+  color: #424e39 !important;
+}
+.hero-copy .button {
+  font-size: 16px !important;
+  padding: 14px 24px !important;
+  border-radius: 6px !important;
+}
+.hero-note {
+  font-size: 14.5px !important;
+  color: #3a4a35 !important;
+  font-weight: 500 !important;
+}
+.hero-note span {
+  font-size: 20px !important;
+}
+.hero-orbit {
+  font-size: 11.5px !important;
+  line-height: 1.35 !important;
+}
+.featured-caption {
+  padding: 14px 18px !important;
+  font-size: 13.5px !important;
+}
+.featured-caption strong {
+  font-size: 16.5px !important;
+  margin-top: 4px !important;
+}
+.featured-caption small {
+  font-size: 13.5px !important;
+}
+
+/* 4. Dải 3 cột tiện ích (Reading Strip) */
+.reading-strip {
+  padding: 24px 0 28px !important;
+}
+.reading-strip > div strong {
+  font-size: 15.5px !important;
+  color: #26382e !important;
+  font-weight: 600 !important;
+}
+.reading-strip > div p {
+  font-size: 13.5px !important;
+  color: #556358 !important;
+  margin-top: 3px !important;
+}
+
+/* 5. Tiêu đề danh mục & Mục sách */
+.section-heading .eyebrow {
+  font-size: 13px !important;
+  letter-spacing: 2px !important;
+  font-weight: 700 !important;
+  color: #586650 !important;
+}
+.section-heading h2 {
+  font-size: 32px !important;
+  font-weight: 600 !important;
+}
+.category-chip {
+  font-size: 13.5px !important;
+  min-height: 105px !important;
+  padding: 12px 10px !important;
+}
+.category-chip span {
+  font-size: 28px !important;
+}
+.sort-label {
+  font-size: 14.5px !important;
+}
+.sort-label select {
+  font-size: 14.5px !important;
+}
+#result-summary {
+  font-size: 14px !important;
+}
+
+/* 6. Thẻ sách trên kệ (Book Cards) */
+.book-meta > small {
+  font-size: 13px !important;
+  color: #5f6954 !important;
+  font-weight: 500 !important;
+}
+.book-meta h3, .book-meta h3 a {
+  font-size: 16.5px !important;
+  line-height: 1.4 !important;
+}
+.book-meta p {
+  font-size: 14.5px !important;
+  color: #5d6355 !important;
+}
+.book-bottom strong {
+  font-size: 18.5px !important;
+}
+.storefront .pager {
+  font-size: 15px !important;
+}
+.storefront .pager button {
+  font-size: 14.5px !important;
+}
+
+/* 7. Khối Editorial & Footer */
+.editorial .eyebrow {
+  font-size: 13px !important;
+  letter-spacing: 2px !important;
+}
+.editorial h2 {
+  font-size: 34px !important;
+}
+.editorial p {
+  font-size: 16px !important;
+  line-height: 1.8 !important;
+}
+.editorial .button {
+  font-size: 15.5px !important;
+  padding: 13px 22px !important;
+}
+footer, .storefront footer {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  padding: 28px 20px !important;
+}
