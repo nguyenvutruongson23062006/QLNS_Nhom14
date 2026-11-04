@@ -122,7 +122,7 @@ public class SecurityConfig {
                     Long khachHangId = jdbc.queryForObject(
                             "SELECT k.id FROM khach_hang k JOIN tai_khoan t ON t.id=k.tai_khoan_id WHERE t.ten_dang_nhap=?",
                             Long.class, account[0]);
-                    if (khachHangId != null && jdbc.queryForObject("SELECT COUNT(*) FROM hoi_vien WHERE khach_hang_id=?", Integer.class, khachHangId) == 0) {
+                    if (env.acceptsProfiles(Profiles.of("demo")) && khachHangId != null && jdbc.queryForObject("SELECT COUNT(*) FROM hoi_vien WHERE khach_hang_id=?", Integer.class, khachHangId) == 0) {
                         String suffix = java.util.UUID.randomUUID().toString().replace("-", "");
                         jdbc.update("""
                                 INSERT INTO hoi_vien(khach_hang_id,ma_hoi_vien,ngay_bat_dau,ngay_het_han,trang_thai)
