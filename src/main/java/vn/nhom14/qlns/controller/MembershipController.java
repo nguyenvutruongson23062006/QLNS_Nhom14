@@ -28,4 +28,6 @@ public class MembershipController {
     }
     @PatchMapping("/{id}/card") public MembershipResponse card(Authentication authentication,@PathVariable long id,
             @Valid @RequestBody CardStatusRequest request){return memberships.changeCardStatus(authentication,id,request);}
+    @DeleteMapping("/{id}") @ResponseStatus(HttpStatus.NO_CONTENT) public void delete(
+            Authentication authentication,@PathVariable long id){memberships.delete(authentication,id);}
 }

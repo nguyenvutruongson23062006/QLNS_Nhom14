@@ -119,6 +119,20 @@ public class MembershipService {
         return get(membershipId);
     }
 
+    @Transactional(timeout=10)
+    public void delete(Authentication authentication, long membershipId) {
+        actors.require(authentication).requireStaff();
+        var rows = jdbc.query("SELECT id FROM hoi_vien WHERE id=?", (result, index) -> result.getLong(1), membershipId);
+        if (rows.isEmpty()) throw error(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ hội viên");
+        var cardIds = jdbc.query("SELECT id FROM the_thanh_vien WHERE hoi_vien_id=?", (result, index) -> result.getLong(1), membershipId);
+        for (Long cardId : cardIds) {
+            jdbc.update("DELETE FROM giao_the WHERE the_thanh_vien_id=?", cardId);
+        }
+        jdbc.update("DELETE FROM the_thanh_vien WHERE hoi_vien_id=?", membershipId);
+        jdbc.update("DELETE FROM thanh_toan WHERE tham_chieu_loai='HOI_VIEN' AND tham_chieu_id=?", membershipId);
+        jdbc.update("DELETE FROM hoi_vien WHERE id=?", membershipId);
+    }
+
     private MembershipResponse get(long id) {
         var rows=jdbc.query("""
                 SELECT h.*,k.ho_ten,t.id AS the_id,t.ma_the,t.phuong_thuc_nhan,t.trang_thai AS the_trang_thai,

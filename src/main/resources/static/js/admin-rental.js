@@ -83,12 +83,24 @@ async function adminMembershipPage(){
     actions.push(`<button data-member-card="${m.id}" data-next="${m.card.phuongThucNhan==='GIAO_HANG'?'DANG_GIAO':'CHO_NHAN'}">${m.card.phuongThucNhan==='GIAO_HANG'?'Bàn giao vận chuyển':'In và chờ nhận thẻ'}</button>`);
    if(m.trangThai==='DANG_HOAT_DONG'&&['CHO_NHAN','DANG_GIAO'].includes(m.card.trangThai))
     actions.push(`<button data-member-card="${m.id}" data-next="DA_KICH_HOAT">Kích hoạt thẻ</button>`);
+   actions.push(`<button class="danger" data-member-delete="${m.id}" data-member-name="${esc(m.hoTenKhachHang)}">✕ Gỡ hội viên</button>`);
    return `<article class="panel member-admin-card"><div class="rental-card-head"><div><span class="eyebrow">${esc(m.maHoiVien)}</span><h3>${esc(m.hoTenKhachHang)}</h3><p>${esc(m.card.maThe)} · ${m.card.phuongThucNhan==='GIAO_HANG'?'Giao tận nơi':'Nhận tại quầy'}</p></div><span class="status-badge">${esc(rentalLabel(m.trangThai))}</span></div><p>Thẻ: <strong>${esc(rentalLabel(m.card.trangThai))}</strong>${m.payment?' · Thanh toán '+esc(rentalLabel(m.payment.trangThai)):''}</p><div class="actions">${actions.join('')}</div></article>`;
   }
   app.innerHTML=`<span class="eyebrow">HỘI VIÊN</span><h1>Thẻ thành viên</h1><p>Xác nhận thanh toán để kích hoạt hội viên, sau đó phát hành và kích hoạt thẻ.</p><div id="admin-rental-message" role="alert" hidden></div><form id="counter-membership" class="panel admin-counter-membership"><h2>Đăng ký tại quầy</h2><div class="form-grid"><label>Khách hàng<select name="customerId" required><option value="">Chọn khách hàng</option>${customers.map(c=>`<option value="${c.id}">${esc(c.hoTen)} · ${esc(c.email||c.soDienThoai||'')}</option>`).join('')}</select></label><label>Thanh toán<select name="phuongThucThanhToan"><option value="TIEN_MAT">Tiền mặt</option><option value="VIETQR">VietQR</option></select></label></div><button>Đăng ký thẻ 50.000 đ</button></form><div class="order-list">${members.length?members.map(memberCard).join(''):'<section class="empty-shelf"><h3>Chưa có hội viên</h3></section>'}</div>`;
   document.querySelector('#counter-membership').onsubmit=async e=>{e.preventDefault();const button=e.currentTarget.querySelector('button'),v=Object.fromEntries(new FormData(e.currentTarget));button.disabled=true;try{await api(`memberships/customers/${v.customerId}`,{method:'POST',body:JSON.stringify({phuongThucNhan:'TAI_QUAY',phuongThucThanhToan:v.phuongThucThanhToan,tenNguoiNhan:'',soDienThoai:'',diaChi:''})});location.reload();}catch(err){adminNotice(err.message,true);button.disabled=false;}};
   document.querySelectorAll('.reconcile-form').forEach(form=>form.onsubmit=async e=>{e.preventDefault();const button=form.querySelector('button');button.disabled=true;try{await api(`payments/${form.dataset.payment}/reconcile`,{method:'PATCH',body:JSON.stringify({maGiaoDichNhaCungCap:form.elements.reference.value.trim(),ghiChu:'Xác nhận từ trang hội viên'})});location.reload();}catch(err){adminNotice(err.message,true);button.disabled=false;}});
   document.querySelectorAll('[data-member-card]').forEach(button=>button.onclick=async()=>{button.disabled=true;let tracking='';if(button.dataset.next==='DANG_GIAO')tracking=prompt('Nhập mã vận đơn (có thể để trống nếu chưa có):','')||'';try{await api(`memberships/${button.dataset.memberCard}/card`,{method:'PATCH',body:JSON.stringify({trangThai:button.dataset.next,maVanDon:tracking})});location.reload();}catch(err){adminNotice(err.message,true);button.disabled=false;}});
+  document.querySelectorAll('[data-member-delete]').forEach(button=>button.onclick=async()=>{
+   if(!confirm(`Bạn có chắc chắn muốn gỡ hội viên của khách hàng "${button.dataset.memberName}" không?\n\nSau khi gỡ, hồ sơ hội viên và thẻ sẽ bị xóa hoàn toàn, khách hàng có thể đăng ký lại mới.`)) return;
+   button.disabled=true;
+   try{
+    await api(`memberships/${button.dataset.memberDelete}`,{method:'DELETE'});
+    location.reload();
+   }catch(err){
+    adminNotice(err.message,true);
+    button.disabled=false;
+   }
+  });
  }catch(e){app.innerHTML=`<section class="panel"><h1>Không tải được hội viên</h1><p role="alert">${esc(e.message)}</p></section>`;}
 }
 async function adminPaymentPage(){
