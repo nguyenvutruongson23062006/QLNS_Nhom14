@@ -51,7 +51,14 @@ INSERT INTO nha_xuat_ban (id, ten_nha_xuat_ban) VALUES
     (30, 'Springer'),
     (31, 'Penguin Books'),
     (32, 'Harmony'),
-    (33, 'Ten Speed Press');
+    (33, 'Ten Speed Press'),
+    (34, 'NXB Trẻ'),
+    (35, 'NXB Kim Đồng'),
+    (36, 'NXB Hội Nhà Văn'),
+    (37, 'NXB Văn Học'),
+    (38, 'NXB Lao Động'),
+    (39, 'NXB Thế Giới'),
+    (40, 'NXB Tổng Hợp TP.HCM');
 
 INSERT INTO sach
     (ma_sach, ten_sach, tac_gia, isbn, danh_muc_id, nha_xuat_ban_id, nam_xuat_ban, gia_ban, so_luong_ton, mo_ta, hinh_anh)
@@ -95,7 +102,42 @@ VALUES
     ('S037', 'Why We Sleep', 'Matthew Walker', '9781501144318', 10, 24, 2017, 239000, 18, 'Tổng hợp nghiên cứu về vai trò của giấc ngủ đối với trí nhớ, sức khỏe và hiệu suất. Tác giả thảo luận về các giai đoạn ngủ, nhịp sinh học và mối liên hệ giữa nghỉ ngơi với hoạt động hằng ngày. Cuốn sách dành cho độc giả quan tâm khoa học giấc ngủ; những nội dung về sức khỏe nên được đọc như thông tin tham khảo thay vì chỉ dẫn điều trị cá nhân.', '/images/books/s037.jpg'),
     ('S038', 'The Body Keeps the Score', 'Bessel van der Kolk', '9780143127741', 10, 31, 2015, 269000, 12, 'Khảo sát tác động của sang chấn lên cơ thể và tâm trí cùng các hướng tiếp cận phục hồi. Thông qua các câu chuyện lâm sàng và góc nhìn nghiên cứu, tác giả mô tả cách trải nghiệm sang chấn có thể ảnh hưởng đến cảm xúc, trí nhớ và phản ứng cơ thể. Tác phẩm có nội dung nhạy cảm, phù hợp để tìm hiểu và thảo luận về sức khỏe tinh thần, không thay thế hỗ trợ chuyên môn.', '/images/books/s038.jpg'),
     ('S039', 'Outlive', 'Peter Attia; Bill Gifford', '9780593236598', 10, 32, 2023, 319000, 15, 'Trình bày cách tiếp cận chủ động đối với sức khỏe lâu dài, phòng ngừa bệnh mạn tính và nâng cao chất lượng sống. Cuốn sách bàn về việc duy trì khả năng vận động, chú ý đến dinh dưỡng, giấc ngủ và sức khỏe cảm xúc khi tuổi tác tăng lên. Những phân tích về nguy cơ và phòng ngừa cung cấp chủ đề để người đọc trao đổi với chuyên gia y tế theo hoàn cảnh riêng.', '/images/books/s039.jpg'),
-    ('S040', 'The Life-Changing Magic of Tidying Up', 'Marie Kondo', '9781607747307', 10, 33, 2014, 199000, 20, 'Phương pháp sắp xếp không gian sống dựa trên việc giữ lại những đồ vật thực sự có ý nghĩa. Tác giả đề xuất sắp xếp đồ đạc theo nhóm và cân nhắc cảm nhận của bản thân khi quyết định giữ lại hay cho đi. Những gợi ý về quần áo, sách vở và vật dụng cá nhân giúp người đọc từng bước tổ chức không gian sống theo nhu cầu của mình.', '/images/books/s040.jpg');
+    ('S040', 'The Life-Changing Magic of Tidying Up', 'Marie Kondo', '9781607747307', 10, 33, 2014, 199000, 20, 'Phương pháp sắp xếp không gian sống dựa trên việc giữ lại những đồ vật thực sự có ý nghĩa. Tác giả đề xuất sắp xếp đồ đạc theo nhóm và cân nhắc cảm nhận của bản thân khi quyết định giữ lại hay cho đi. Những gợi ý về quần áo, sách vở và vật dụng cá nhân giúp người đọc từng bước tổ chức không gian sống theo nhu cầu của mình.', '/images/books/s040.jpg'),
+    ('S041', 'Dế Mèn Phiêu Lưu Ký', 'Tô Hoài', '9786042183215', 5, 35, 2021, 65000, 45, 'Kiệt tác văn học thiếu nhi Việt Nam kể về hành trình chu du, trưởng thành và bài học về lòng nhân ái, dũng cảm của chú Dế Mèn qua nhiều vùng đất kỳ thú.', '/images/books/s041.jpg'),
+    ('S042', 'Tuổi Thơ Dữ Dội', 'Phùng Quán', '9786049903112', 2, 37, 2020, 145000, 30, 'Bản trường ca bất hủ về những thiếu niên quả cảm của đội trinh sát Vệ Quốc Đoàn trong những ngày khói lửa tại chiến khu Thừa Thiên Huế.', '/images/books/s042.jpg'),
+    ('S043', 'Số Đỏ', 'Vũ Trọng Phụng', '9786049903204', 2, 37, 2019, 85000, 35, 'Tác phẩm trào phúng đỉnh cao của văn học hiện thực phê phán Việt Nam thế kỷ 20, vạch trần xã hội thực dân nửa phong kiến qua nhân vật Xuân Tóc Đỏ.', '/images/books/s043.jpg'),
+    ('S044', 'Cánh Đồng Bất Tận', 'Nguyễn Ngọc Tư', '9786041189423', 2, 34, 2021, 95000, 40, 'Tập truyện ngắn nổi tiếng khắc họa chân thực và sâu lắng số phận trôi dạt của con người trên miền sông nước Nam Bộ.', '/images/books/s044.jpg'),
+    ('S045', 'Cho Tôi Xin Một Vé Đi Tuổi Thơ', 'Nguyễn Nhật Ánh', '9786041185340', 2, 34, 2022, 90000, 50, 'Cuốn vé thần kỳ đưa người đọc trở về những năm tháng ấu thơ trong trẻo, hồn nhiên với những câu chuyện dí dỏm và đầy triết lý nhân sinh.', '/images/books/s045.jpg'),
+    ('S046', 'Tôi Thấy Hoa Vàng Trên Cỏ Xanh', 'Nguyễn Nhật Ánh', '9786041185357', 2, 34, 2022, 115000, 40, 'Bức tranh làng quê bình dị với tình anh em, tình bạn và những rung động đầu đời trong sáng của tuổi niên thiếu.', '/images/books/s046.jpg'),
+    ('S047', 'Mắt Biếc', 'Nguyễn Nhật Ánh', '9786041185364', 2, 34, 2021, 110000, 35, 'Bản tình ca đượm buồn về mối tình đơn phương thủy chung của chàng thanh niên Ngạn dành cho cô bạn thời thơ ấu có đôi mắt biếc.', '/images/books/s047.jpg'),
+    ('S048', 'Nỗi Buồn Chiến Tranh', 'Bảo Ninh', '9786049931207', 2, 36, 2020, 125000, 25, 'Kiệt tác văn học thời kỳ đổi mới phản ánh chân thực hiện thực tàn khốc của chiến tranh và chiều sâu tâm lý con người thời hậu chiến.', '/images/books/s048.jpg'),
+    ('S049', 'Đất Rừng Phương Nam', 'Đoàn Giỏi', '9786042183222', 5, 35, 2022, 85000, 30, 'Cuộc phiêu lưu sống động của cậu bé An giữa thiên nhiên trù phú và con người hào sảng, bất khuất của miền Tây Nam Bộ.', '/images/books/s049.jpg'),
+    ('S050', 'Vang Bóng Một Thời', 'Nguyễn Tuân', '9786049903303', 2, 37, 2019, 75000, 20, 'Tập tùy bút bậc thầy tái hiện vẻ đẹp văn hóa cổ truyền thanh nhã, tài hoa và khí phách của các bậc nho sĩ thời xưa.', '/images/books/s050.jpg'),
+    ('S051', 'Chiếc Thuyền Ngoài Xa', 'Nguyễn Minh Châu', '9786049903402', 2, 37, 2020, 70000, 25, 'Tác phẩm văn học mang tính triết lý nhân sinh sâu sắc về góc nhìn đa chiều giữa cái đẹp nghệ thuật và hiện thực cuộc đời.', '/images/books/s051.jpg'),
+    ('S052', 'Bỉ Vỏ', 'Nguyên Hồng', '9786049903501', 2, 37, 2021, 80000, 22, 'Bức tranh xót xa về số phận người phụ nữ nghèo khổ bị đẩy vào con đường tội lỗi nơi bến cảng Hải Phòng thời tiền chiến.', '/images/books/s052.jpg'),
+    ('S053', 'Chí Phèo', 'Nam Cao', '9786049903600', 2, 37, 2022, 75000, 35, 'Tác phẩm kinh điển về bi kịch tha hóa và khát vọng lương thiện bị cự tuyệt của người nông dân trong xã hội cũ.', '/images/books/s053.jpg'),
+    ('S054', 'Tắt Đèn', 'Ngô Tất Tố', '9786049903709', 2, 37, 2021, 70000, 30, 'Bức tranh ngột ngạt của nông thôn Việt Nam trước Cách mạng và hình tượng chị Dậu giàu đức hy sinh và tinh thần quật khởi.', '/images/books/s054.jpg'),
+    ('S055', 'Gió Đầu Mùa', 'Thạch Lam', '9786049931306', 2, 36, 2020, 68000, 28, 'Những trang văn nhẹ nhàng, tinh tế và thấm đẫm lòng trắc ẩn về tình người giữa cuộc sống đời thường bình dị.', '/images/books/s055.jpg'),
+    ('S056', 'Cà Phê Cùng Tony', 'Tony Buổi Sáng', '9786041186002', 4, 34, 2021, 90000, 50, 'Những bài viết truyền cảm hứng khởi nghiệp, rèn luyện văn minh, sự trung thực và tính tự lập cho các bạn trẻ hiện đại.', '/images/books/s056.jpg'),
+    ('S057', 'Trên Đường Băng', 'Tony Buổi Sáng', '9786041186019', 4, 34, 2022, 95000, 60, 'Cuốn cẩm nang hành trang về thái độ sống, tính kỷ luật, tư duy hội nhập toàn cầu và tinh thần vươn xa của người trẻ.', '/images/books/s057.jpg'),
+    ('S058', 'Hiểu Về Trái Tim', 'Minh Niệm', '9786045899201', 10, 40, 2022, 140000, 45, 'Những phân tích tâm lý sâu sắc về tình yêu, tha thứ, khổ đau và bình yên nội tâm, giúp nuôi dưỡng tâm hồn mỗi ngày.', '/images/books/s058.jpg'),
+    ('S059', 'Muôn Kiếp Nhân Sinh', 'Nguyên Phong', '9786045899300', 2, 40, 2021, 168000, 40, 'Hành trình trải nghiệm luân hồi và quy luật nhân quả qua nhiều kiếp sống từ nền văn minh Atlantis đến Ai Cập cổ đại.', '/images/books/s059.jpg'),
+    ('S060', 'Hành Trình Về Phương Đông', 'Nguyên Phong', '9786047781002', 2, 39, 2020, 110000, 35, 'Ghi chép về chuyến khảo sát tâm linh kỳ bí của đoàn khoa học Hoàng gia Anh tại dãy Himalaya và xứ sở Ấn Độ huyền bí.', '/images/books/s060.jpg'),
+    ('S061', 'Đắc Nhân Tâm', 'Dale Carnegie', '9786045899409', 4, 40, 2022, 98000, 70, 'Bản dịch kinh điển của học giả Nguyễn Hiến Lê, nghệ thuật thu phục lòng người và xây dựng mối quan hệ giao tiếp bền vững.', '/images/books/s061.jpg'),
+    ('S062', 'Quẳng Gánh Lo Đi Và Vui Sống', 'Dale Carnegie', '9786045899508', 4, 40, 2021, 92000, 50, 'Phương pháp vượt qua âu lo, làm chủ căng thẳng và tìm lại niềm vui trong công việc cũng như cuộc sống thường nhật.', '/images/books/s062.jpg'),
+    ('S063', 'Nhà Giả Kim', 'Paulo Coelho', '9786049931405', 2, 36, 2022, 79000, 80, 'Câu chuyện ngụ ngôn giàu triết lý về hành trình theo đuổi vận mệnh và lắng nghe tiếng gọi trái tim của chàng chăn cừu Santiago.', '/images/books/s063.jpg'),
+    ('S064', 'Cây Cam Ngọt Của Tôi', 'José Mauro de Vasconcelos', '9786049931504', 2, 36, 2022, 108000, 60, 'Tác phẩm chạm đến trái tim hàng triệu bạn đọc về lòng trắc ẩn, tình yêu thương và sự ấm áp giữa những cay đắng cuộc đời.', '/images/books/s064.jpg'),
+    ('S065', 'Chiến Binh Cầu Vồng', 'Andrea Hirata', '9786049931603', 2, 36, 2021, 109000, 40, 'Câu chuyện có thật đầy xúc động về tình bạn và nghị lực vượt lên nghịch cảnh để học tập của 10 đứa trẻ nghèo ở đảo Belitong.', '/images/books/s065.jpg'),
+    ('S066', 'Bước Chậm Lại Giữa Thế Gian Vội Vã', 'Hae Min', '9786047782009', 4, 39, 2022, 95000, 35, 'Những suy ngẫm sâu sắc và dịu dàng giúp tìm lại sự tĩnh lặng, an yên giữa nhịp sống hối hả của xã hội hiện đại.', '/images/books/s066.jpg'),
+    ('S067', 'Lối Sống Tối Giản Của Người Nhật', 'Sasaki Fumio', '9786045999003', 4, 38, 2021, 88000, 30, 'Trải nghiệm thực tế về lối sống giản lược đồ đạc để tập trung vào những giá trị tinh thần và tự do đích thực.', '/images/books/s067.jpg'),
+    ('S068', 'Tìm Lại Chính Mình', 'Thích Nhất Hạnh', '9786045899607', 10, 40, 2020, 85000, 35, 'Phương pháp thực tập chánh niệm đơn giản và sâu sắc giúp chuyển hóa những năng lượng tiêu cực thành bình an và tình thương.', '/images/books/s068.jpg'),
+    ('S069', 'An Lạc Từng Bước Chân', 'Thích Nhất Hạnh', '9786045999102', 10, 38, 2021, 82000, 30, 'Nghệ thuật sống tỉnh thức trong từng hơi thở, bước chân và việc làm bình dị mỗi ngày.', '/images/books/s069.jpg'),
+    ('S070', 'Tâm Lý Học Về Tiền', 'Morgan Housel', '9786041187009', 3, 34, 2022, 160000, 45, 'Những bài học vượt thời gian về sự giàu có, lòng tham và hạnh phúc qua lăng kính hành vi tâm lý con người.', '/images/books/s070.jpg'),
+    ('S071', 'Khởi Nghiệp Tinh Gọn', 'Eric Ries', '9786045899706', 3, 40, 2021, 145000, 25, 'Mô hình xây dựng doanh nghiệp đổi mới sáng tạo, thử nghiệm nhanh và tiết kiệm tối đa nguồn lực.', '/images/books/s071.jpg'),
+    ('S072', 'Lược Sử Loài Người', 'Yuval Noah Harari', '9786047783006', 8, 39, 2022, 220000, 35, 'Góc nhìn lịch sử vĩ mô khám phá cách loài vượn người không có gì nổi trội trở thành bá chủ hành tinh Trái Đất.', '/images/books/s072.jpg'),
+    ('S073', 'Đại Việt Sử Ký Toàn Thư', 'Ngô Sĩ Liên', '9786049903808', 8, 37, 2020, 350000, 15, 'Bộ quốc sử đồ sộ ghi chép toàn diện lịch sử dựng nước và giữ nước oai hùng của dân tộc Việt Nam qua các triều đại.', '/images/books/s073.jpg'),
+    ('S074', 'Việt Nam Sử Lược', 'Trần Trọng Kim', '9786049903907', 8, 37, 2021, 185000, 25, 'Cuốn sử thông lược đầu tiên viết bằng chữ quốc ngữ, trình bày khúc chiết và mạch lạc tiến trình lịch sử dân tộc.', '/images/books/s074.jpg'),
+    ('S075', 'Hoàng Tử Bé', 'Antoine de Saint-Exupéry', '9786042183307', 5, 35, 2022, 75000, 60, 'Bản dịch tiếng Việt kinh điển của cuốn sách gối đầu giường về tình bạn, tình yêu và những bài học cuộc sống sâu sắc.', '/images/books/s075.jpg');
 
 
 -- Cấu hình cho thuê 10 đầu sách (gia_thue_ngay, tien_coc, so_ngay_mac_dinh, so_lan_gia_han, phi_tre_ngay)

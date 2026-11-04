@@ -847,3 +847,95 @@ footer, .storefront footer {
   line-height: 1.6 !important;
   padding: 28px 20px !important;
 }
+/* ================= NÂNG CẤP FONT CHỮ TO, CĂNG NÉT VÀ THOÁNG MẮT HƠN NỮA ================= */
+html {
+  font-size: 17.5px !important;
+}
+body {
+  font-size: 17px !important;
+  line-height: 1.7 !important;
+}
+.brand {
+  font-size: 26px !important;
+}
+.brand span {
+  font-size: 14.5px !important;
+  letter-spacing: 4px !important;
+}
+nav a, header nav a, .storefront nav a, .user-menu-btn {
+  font-size: 17px !important;
+}
+.dropdown-menu a, .dropdown-menu button {
+  font-size: 16px !important;
+}
+.shop-search {
+  font-size: 17px !important;
+}
+.shop-search > span {
+  font-size: 17.5px !important;
+}
+.shop-search input {
+  font-size: 16.5px !important;
+  padding: 14px 20px !important;
+}
+.shop-search button {
+  font-size: 16.5px !important;
+  padding: 14px 24px !important;
+}
+.hero-copy .eyebrow {
+  font-size: 14px !important;
+  letter-spacing: 2px !important;
+}
+.hero-copy h1 {
+  font-size: 56px !important;
+  line-height: 1.2 !important;
+}
+.hero-copy p {
+  font-size: 18px !important;
+  line-height: 1.8 !important;
+  max-width: 500px !important;
+}
+.hero-copy .button {
+  font-size: 17px !important;
+  padding: 15px 26px !important;
+}
+.hero-note {
+  font-size: 15.5px !important;
+}
+.hero-note span {
+  font-size: 22px !important;
+}
+.reading-strip > div strong {
+  font-size: 17px !important;
+}
+.reading-strip > div p {
+  font-size: 15px !important;
+}
+.section-heading h2 {
+  font-size: 34px !important;
+}
+.category-chip {
+  font-size: 15px !important;
+}
+.book-meta h3, .book-meta h3 a {
+  font-size: 18px !important;
+  line-height: 1.45 !important;
+}
+.book-meta p {
+  font-size: 15.5px !important;
+}
+.book-bottom strong {
+  font-size: 20px !important;
+}
+.book-card .button, .book-card button, .book-action-btn, .button, button {
+  font-size: 16px !important;
+}
+input, select, textarea {
+  font-size: 16px !important;
+}
+table th, table td {
+  font-size: 16px !important;
+}
+footer, .storefront footer {
+  font-size: 15px !important;
+}
