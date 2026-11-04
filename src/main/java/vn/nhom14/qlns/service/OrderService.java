@@ -88,7 +88,7 @@ public class OrderService {
         if(!user.role().equals("KHACH_HANG"))throw error(HttpStatus.FORBIDDEN,"Chỉ tài khoản khách hàng được đặt hàng");
         SortedMap<Long,Integer> quantities=new TreeMap<>();
         for(OrderRequest.Item item:request.items()){
-            int quantity=quantities.merge(item.sachId(),item.soLuong(),Integer::sum);
+            int quantity=quantities.merge(item.sachId(),item.soLuong(),(left,right) -> Objects.requireNonNull(left)+Objects.requireNonNull(right));
             if(quantity>99)throw error(HttpStatus.BAD_REQUEST,"Mỗi sách được đặt tối đa 99 cuốn");
         }
         jdbc.queryForObject(lock("SELECT id FROM khach_hang WHERE id=?"),Long.class,user.customerId());
@@ -206,7 +206,7 @@ public class OrderService {
             int qty=r.getInt("so_luong");BigDecimal price=r.getBigDecimal("don_gia");
             items.computeIfAbsent(r.getLong("don_hang_id"),k->new ArrayList<>()).add(new OrderResponse.Item(r.getLong("sach_id"),
                     r.getString("ma_sach"),r.getString("ten_sach"),r.getString("hinh_anh"),qty,price,price.multiply(BigDecimal.valueOf(qty)),"SACH_MOI",null,null));
-        },headers.stream().map(OrderResponse::id).toArray());
+        },headers.stream().map(order -> Objects.requireNonNull(order).id()).toArray());
         jdbc.query("""
                 SELECT c.don_hang_id,sc.id AS sach_cu_id,b.sach_id,s.ma_sach,s.ten_sach,
                     COALESCE(sc.hinh_anh,s.hinh_anh) AS hinh_anh,c.don_gia,sc.tinh_trang
@@ -216,7 +216,7 @@ public class OrderService {
                 """+placeholders+") ORDER BY c.don_hang_id,sc.id",r->{
             BigDecimal price=r.getBigDecimal("don_gia");items.computeIfAbsent(r.getLong("don_hang_id"),k->new ArrayList<>()).add(
                     new OrderResponse.Item(r.getLong("sach_id"),r.getString("ma_sach"),r.getString("ten_sach"),r.getString("hinh_anh"),1,price,price,"SACH_CU",r.getLong("sach_cu_id"),r.getString("tinh_trang")));
-        },headers.stream().map(OrderResponse::id).toArray());
+        },headers.stream().map(order -> Objects.requireNonNull(order).id()).toArray());
         return headers.stream().map(o->new OrderResponse(o.id(),o.maDonHang(),o.khachHangId(),o.hoTenKhachHang(),o.trangThai(),o.tenNguoiNhan(),
                 o.soDienThoaiNhan(),o.diaChiGiao(),o.tongTien(),o.ghiChu(),o.ngayDat(),List.copyOf(items.getOrDefault(o.id(),List.of())))).toList();
     }

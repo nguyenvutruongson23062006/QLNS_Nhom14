@@ -34,7 +34,7 @@ public class RentalService {
         if(!actor.staff()){sql+=" AND p.khach_hang_id=?";args.add(actor.requireCustomer());}
         if(!normalized.isEmpty()){sql+=" AND p.trang_thai=?";args.add(normalized);}
         sql+=" ORDER BY p.id DESC";
-        return jdbc.query(sql,(result,index)->result.getLong(1),args.toArray()).stream().map(this::getInternal).toList();
+        return jdbc.query(sql,(result,index)->result.getLong(1),args.toArray()).stream().map(id -> getInternal(Objects.requireNonNull(id))).toList();
     }
     public RentalResponse get(Authentication authentication,long id){
         var actor=actors.require(authentication);RentalResponse rental=getInternal(id);
@@ -52,7 +52,7 @@ public class RentalService {
             throw error(HttpStatus.NOT_FOUND,"Không tìm thấy khách hàng");
         Customer customer=activeMember(customerId);
         SortedMap<Long,Integer> quantities=new TreeMap<>();int requested=0;
-        for(var item:request.items()){int quantity=quantities.merge(item.sachId(),item.soLuong(),Integer::sum);if(quantity>5)throw error(HttpStatus.BAD_REQUEST,"Mỗi đầu sách thuê tối đa 5 bản");requested+=item.soLuong();}
+        for(var item:request.items()){int quantity=quantities.merge(item.sachId(),item.soLuong(),(left,right) -> Objects.requireNonNull(left)+Objects.requireNonNull(right));if(quantity>5)throw error(HttpStatus.BAD_REQUEST,"Mỗi đầu sách thuê tối đa 5 bản");requested+=item.soLuong();}
         int active=jdbc.queryForObject("SELECT COUNT(*) FROM chi_tiet_phieu_thue c JOIN phieu_thue p ON p.id=c.phieu_thue_id WHERE p.khach_hang_id=? AND p.trang_thai IN ('CHO_XAC_NHAN','DA_DUYET','CHO_THANH_TOAN','CHO_NHAN_SACH','DANG_THUE','TRANH_CHAP')",Integer.class,customerId);
         if(active+requested>MAX_ACTIVE_COPIES)throw error(HttpStatus.CONFLICT,"Mỗi hội viên chỉ được giữ tối đa "+MAX_ACTIVE_COPIES+" bản sách đang thuê");
         var existing=jdbc.query("SELECT id FROM phieu_thue WHERE khach_hang_id=? AND client_request_id=?",(result,index)->result.getLong(1),customerId,request.clientRequestId().toLowerCase(Locale.ROOT));
@@ -180,7 +180,7 @@ public class RentalService {
 
     public List<RentalResponse> overdue(Authentication authentication){
         actors.require(authentication).requireStaff();return jdbc.query("SELECT DISTINCT p.id FROM phieu_thue p JOIN chi_tiet_phieu_thue c ON c.phieu_thue_id=p.id WHERE p.trang_thai='DANG_THUE' AND c.ngay_hen_tra<CURRENT_DATE ORDER BY p.id",
-                (result,index)->result.getLong(1)).stream().map(this::getInternal).toList();
+                (result,index)->result.getLong(1)).stream().map(id -> getInternal(Objects.requireNonNull(id))).toList();
     }
 
     private Customer activeMember(long customerId){
@@ -215,7 +215,7 @@ public class RentalService {
     }
 
     private void verifyReplay(RentalResponse previous,RentalRequest request,SortedMap<Long,Integer> quantities){
-        Map<Long,Integer> old=new TreeMap<>();previous.items().forEach(item->old.merge(item.sachId(),1,Integer::sum));
+        Map<Long,Integer> old=new TreeMap<>();previous.items().forEach(item->old.merge(item.sachId(),1,(left,right) -> Objects.requireNonNull(left)+Objects.requireNonNull(right)));
         PaymentResponse initialPayment=payments.getLatestForReference("PHIEU_THUE",previous.id());
         String oldPayment=initialPayment==null?request.phuongThucThanhToan():initialPayment.phuongThuc();
         if(!old.equals(quantities)||!previous.phuongThucNhan().equals(request.phuongThucNhan())||!oldPayment.equals(request.phuongThucThanhToan())
@@ -234,7 +234,7 @@ public class RentalService {
     private void log(long rentalId,String oldState,String newState,Long accountId,String note){jdbc.update("INSERT INTO nhat_ky_thue(phieu_thue_id,trang_thai_cu,trang_thai_moi,nguoi_thuc_hien_id,ghi_chu) VALUES(?,?,?,?,?)",rentalId,oldState,newState,accountId,note);}
     private long insert(String sql,SqlBinder binder){var key=new GeneratedKeyHolder();jdbc.update(connection->{PreparedStatement statement=connection.prepareStatement(sql,new String[]{"id"});binder.bind(statement);return statement;},key);return Objects.requireNonNull(key.getKey()).longValue();}
     private interface SqlBinder{void bind(PreparedStatement statement)throws SQLException;}
-    private record Customer(String name,String phone,String address,String expiry,String memberState,String cardState){Customer(String name,String phone,String address){this(name,phone,address,null,null,null);}}
+    private record Customer(String name,String phone,String address,String expiry,String memberState,String cardState){}
     private record Config(long bookId,String code,String name,BigDecimal dailyRate,BigDecimal deposit,int days,int maxRenewals,BigDecimal lateRate){}
     private record Copy(long id,String code,String condition){}
     private record Allocation(Config config,Copy copy){}

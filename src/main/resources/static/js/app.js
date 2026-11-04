@@ -156,11 +156,36 @@ async function catalog(home=false){
  document.querySelector('#sort-books').onchange=()=>{page=0;load();};document.querySelector('#prev').onclick=()=>{page--;load();};document.querySelector('#next').onclick=()=>{page++;load();};load();await renderFavoriteSummary();
  }catch(e){app.innerHTML=`<section class="panel"><h1>Tủ sách chưa tải được</h1><p role="alert">${esc(e.message)}</p><button onclick="location.reload()">Thử lại</button></section>`;}
 }
+function authorKey(value){return (value||'').normalize('NFC').trim().replace(/\s+/g,' ').toLocaleLowerCase('vi');}
+async function relatedBooks(book,category,mode='category',catalogData){
+ const sameAuthor=mode==='author';
+ const sectionId=sameAuthor?'same-author-books':'related-books';
+ const title=sameAuthor?'Sách cùng tác giả':'Sách cùng thể loại';
+ const section=document.querySelector('#'+sectionId);
+ if(!section)return;
+ section.innerHTML=`<h2 id="${sectionId}-title">${title}</h2><p role="status">Đang tìm sách gợi ý…</p>`;
+ try{
+  const [books,publishers]=await (catalogData||Promise.all([allPages('sach'),allPages('nha-xuat-ban')]));
+  const author=authorKey(book.tacGia);
+  const suggestions=books.filter(item=>item.id!==book.id&&item.trangThai&&(sameAuthor
+   ?author!==''&&authorKey(item.tacGia)===author:item.danhMucId===book.danhMucId))
+   .sort((left,right)=>Number(right.soLuongTon>0)-Number(left.soLuongTon>0)||left.id-right.id).slice(0,4);
+  const publisherNames=new Map(publishers.map(item=>[item.id,item.tenNhaXuatBan]));
+  const description=sameAuthor?(author?`Khám phá thêm những cuốn sách của ${esc(book.tacGia)}.`:'Cuốn sách này chưa có thông tin tác giả.'):`Khám phá thêm những cuốn sách thuộc ${esc(category.tenDanhMuc)}.`;
+  const empty=sameAuthor?'Hiện chưa có sách khác cùng tác giả. Bạn có thể khám phá thêm trong tủ sách.':'Hiện chưa có sách khác cùng thể loại. Bạn có thể khám phá thêm trong tủ sách.';
+  section.innerHTML=`<div class="section-heading"><div><span class="eyebrow">CÓ THỂ BẠN CŨNG THÍCH</span><h2 id="${sectionId}-title">${title}</h2><p>${description}</p></div><a class="button secondary" href="/sach.html">Khám phá tủ sách →</a></div>${suggestions.length?`<div class="shop-grid">${suggestions.map(item=>card(item,publisherNames.get(item.nhaXuatBanId))).join('')}</div>`:`<p class="empty-shelf">${empty}</p>`}`;
+ }catch(error){
+  section.innerHTML=`<h2 id="${sectionId}-title">${title}</h2><p role="status">Chưa tải được sách gợi ý.</p><button type="button" id="retry-${sectionId}">Thử lại</button>`;
+  section.querySelector('#retry-'+sectionId).onclick=()=>relatedBooks(book,category,mode);
+ }
+}
 async function detail(){
  app.innerHTML='<p>Đang tải sách…</p>';
  try{const id=new URLSearchParams(location.search).get('id');if(!/^\d+$/.test(id||''))throw Error('Mã sách không hợp lệ');
  const b=await api('sach/'+id), c=await api('danh-muc/'+b.danhMucId),n=await api('nha-xuat-ban/'+b.nhaXuatBanId),rental=(await api('rental-catalog').catch(()=>[])).find(r=>r.sachId===b.id&&r.choThue);
- app.innerHTML=`<a href="/sach.html">← Quay lại tủ sách</a><section class="detail panel">${bookArt(b,n.tenNhaXuatBan,false,true)}<div><span class="eyebrow">${esc(c.tenDanhMuc)}</span><h1>${esc(b.tenSach)}</h1><p>Tác giả: <strong>${esc(b.tacGia)}</strong></p><p>Nhà xuất bản: ${esc(n.tenNhaXuatBan)}</p><p>Năm xuất bản: ${esc(b.namXuatBan||'Đang cập nhật')}</p><p>ISBN: ${esc(b.isbn||'Đang cập nhật')}</p><div class="price">${money(b.giaBan)}</div><p>${b.soLuongTon>0?'Còn '+b.soLuongTon+' cuốn':'Tạm hết hàng'}</p>${favoriteButton(b.id)} <button data-cart-add="${b.id}" ${b.soLuongTon<1?'disabled':''}>Mua sách</button>${rental?` <a class="button secondary" href="/thue-sach.html?book=${b.id}">Thuê sách · ${money(rental.giaThueNgay)}/ngày</a>`:''}</div></section><section class="panel"><h2>Giới thiệu sản phẩm</h2><p>${esc(b.moTa||'Một đầu sách thuộc thể loại '+c.tenDanhMuc+'.')}</p></section><section class="panel" id="publication"><h2>Thông tin xuất bản</h2><dl><dt>Mã sách</dt><dd>${esc(b.maSach)}</dd><dt>ISBN</dt><dd>${esc(b.isbn||'Đang cập nhật')}</dd><dt>Nhà xuất bản</dt><dd>${esc(n.tenNhaXuatBan)}</dd><dt>Năm xuất bản</dt><dd>${esc(b.namXuatBan||'Đang cập nhật')}</dd><dt>Danh mục</dt><dd>${esc(c.tenDanhMuc)}</dd></dl></section>`;
+ app.innerHTML=`<a href="/sach.html">← Quay lại tủ sách</a><section class="detail panel">${bookArt(b,n.tenNhaXuatBan,false,true)}<div><span class="eyebrow">${esc(c.tenDanhMuc)}</span><h1>${esc(b.tenSach)}</h1><p>Tác giả: <strong>${esc(b.tacGia)}</strong></p><p>Nhà xuất bản: ${esc(n.tenNhaXuatBan)}</p><p>Năm xuất bản: ${esc(b.namXuatBan||'Đang cập nhật')}</p><p>ISBN: ${esc(b.isbn||'Đang cập nhật')}</p><div class="price">${money(b.giaBan)}</div><p>${b.soLuongTon>0?'Còn '+b.soLuongTon+' cuốn':'Tạm hết hàng'}</p>${favoriteButton(b.id)} <button data-cart-add="${b.id}" ${b.soLuongTon<1?'disabled':''}>Mua sách</button>${rental?` <a class="button secondary" href="/thue-sach.html?book=${b.id}">Thuê sách · ${money(rental.giaThueNgay)}/ngày</a>`:''}</div></section><section class="panel"><h2>Giới thiệu sản phẩm</h2><p class="book-introduction">${esc(b.moTa||'Một đầu sách thuộc thể loại '+c.tenDanhMuc+'.')}</p></section><section class="panel publication-panel" id="publication"><h2>Thông tin xuất bản</h2><dl class="publication-details"><div><dt>Tên sách</dt><dd>${esc(b.tenSach)}</dd></div><div><dt>Mã sách</dt><dd>${esc(b.maSach)}</dd></div><div><dt>Tác giả / Biên soạn</dt><dd>${esc(b.tacGia||'Chưa có thông tin tác giả')}</dd></div><div><dt>Nhà xuất bản</dt><dd>${esc(n.tenNhaXuatBan)}</dd></div><div><dt>Năm xuất bản</dt><dd>${esc(b.namXuatBan||'Chưa có thông tin năm xuất bản')}</dd></div><div><dt>Thể loại</dt><dd>${esc(c.tenDanhMuc)}</dd></div><div><dt>Mã ISBN</dt><dd>${b.isbn?esc(b.isbn):'<span class="publication-missing">Chưa có thông tin ISBN</span>'}</dd></div></dl></section><section id="related-books" class="related-books" aria-labelledby="related-books-title" aria-live="polite"><h2 id="related-books-title">Sách cùng thể loại</h2></section><section id="same-author-books" class="related-books" aria-labelledby="same-author-books-title" aria-live="polite"><h2 id="same-author-books-title">Sách cùng tác giả</h2></section>`;
+ const catalogData=Promise.all([allPages('sach'),allPages('nha-xuat-ban')]);
+ await Promise.all([relatedBooks(b,c,'category',catalogData),relatedBooks(b,c,'author',catalogData)]);
  }catch(e){app.innerHTML=`<p role="alert">${esc(e.message)}</p><a href="/sach.html">Về tủ sách</a>`;}
 }
 function login(admin=false,register=false){

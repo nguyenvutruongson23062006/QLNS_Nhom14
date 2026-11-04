@@ -46,7 +46,7 @@ public class MembershipService {
         List<Long> ids=normalized.isEmpty()
                 ?jdbc.query("SELECT id FROM hoi_vien ORDER BY id DESC",(result,index)->result.getLong(1))
                 :jdbc.query("SELECT id FROM hoi_vien WHERE trang_thai=? ORDER BY id DESC",(result,index)->result.getLong(1),normalized);
-        return ids.stream().map(this::get).toList();
+        return ids.stream().map(id -> get(Objects.requireNonNull(id))).toList();
     }
 
     @Transactional(timeout=10)

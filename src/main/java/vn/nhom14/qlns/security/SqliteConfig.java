@@ -26,6 +26,9 @@ public class SqliteConfig {
     try(var stmt=c.createStatement();var result=stmt.executeQuery("SELECT COUNT(*) FROM vai_tro")) {
      if(result.next()&&result.getInt(1)==0)ScriptUtils.executeSqlScript(c,new org.springframework.core.io.support.EncodedResource(new ClassPathResource("db/data.sql"),"UTF-8"));
     }
+    applyMigration(c,5,"book-descriptions","db/sqlite/migrations/V5__book_descriptions.sql");
+    applyMigration(c,6,"legacy-catalog-descriptions","db/sqlite/migrations/V6__legacy_catalog_descriptions.sql");
+    applyMigration(c,7,"expanded-book-introductions","db/sqlite/migrations/V7__expanded_book_introductions.sql");
     c.commit();
    }catch(Exception e){c.rollback();ds.close();throw e;}
   }

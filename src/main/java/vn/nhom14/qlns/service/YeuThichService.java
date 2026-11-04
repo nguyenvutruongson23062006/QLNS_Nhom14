@@ -1,6 +1,7 @@
 package vn.nhom14.qlns.service;
 
 import java.util.List;
+import java.util.Objects;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -47,6 +48,6 @@ public class YeuThichService {
     }
     public TongHop summary(String username) {
         List<TheLoai> categories=jdbc.query("SELECT d.id,d.ten_danh_muc,COUNT(*) AS so_sach FROM sach_yeu_thich y JOIN sach s ON y.sach_id=s.id JOIN danh_muc d ON s.danh_muc_id=d.id WHERE y.tai_khoan_id=? GROUP BY d.id,d.ten_danh_muc ORDER BY so_sach DESC,d.id ASC",(rs,n)->new TheLoai(rs.getLong(1),rs.getString(2),rs.getLong(3)),account(username));
-        return new TongHop(categories.stream().mapToLong(TheLoai::soSach).sum(),categories);
+        return new TongHop(categories.stream().mapToLong(category -> Objects.requireNonNull(category).soSach()).sum(),categories);
     }
 }
